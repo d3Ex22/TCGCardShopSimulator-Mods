@@ -1,0 +1,111 @@
+[center][img]https://raw.githubusercontent.com/d3Ex22/TCGCardShopSimulator-Mods/main/SmartWorkerRestock/NexusMods/header_1400x400.jpg[/img]
+
+[size=5][b][color=#E0B13A]Your workers order what your shelves need, and finish opened boxes first.[/color][/b][/size]
+[size=3][color=#C9C9C9]A rewrite of Auto Worker Order for the latest game version, made to work alongside other worker mods.[/color][/size]
+
+[url=https://github.com/d3Ex22/TCGCardShopSimulator-Mods/tree/main/SmartWorkerRestock][img]https://img.shields.io/badge/source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white[/img][/url] [img]https://img.shields.io/badge/version-1.2.0-B3402E?style=for-the-badge[/img] [img]https://img.shields.io/badge/BepInEx-5.4.23-3E7B3A?style=for-the-badge[/img] [img]https://img.shields.io/badge/AI--made-Claude-E0B13A?style=for-the-badge[/img][/center]
+
+[line]
+
+[size=5][b][color=#E0B13A]Description[/color][/b][/size]
+
+[size=3]Hired workers can restock your shop, but someone still has to [b]order the stock[/b], and the game sends them to [b]new boxes first[/b] while half-used ones pile up in the warehouse. Smart Worker Restock takes care of both:
+
+[list]
+[*][b]Automatic orders[/b] that buy only what your shelves really need, counting the stock you already have.
+[*][b]Opened boxes first[/b]: workers empty the half-used boxes before opening new ones.
+[/list]
+
+[quote][b][color=#E0B13A]Why a rewrite of Auto Worker Order?[/color][/b]
+A game update changed how boxes are stored: a box put on a warehouse shelf is now kept as data, and the box only comes back when someone takes it. Auto Worker Order predates that change and only counts box objects, so:
+[list]
+[*][b]it reordered all the time[/b]: it saw an empty warehouse even when it was full (checked in game: it ordered an item while 16 of it were stored);
+[*][b]opened boxes piled up[/b]: new boxes kept arriving on the floor, workers opened those first and never went back to the half-used ones on the shelves.
+[/list]
+It also decided what you could order from your shop level instead of the licenses you actually bought. Smart Worker Restock was written from scratch against the current game and fixes all of that.[/quote][/size]
+
+[center][img]https://raw.githubusercontent.com/d3Ex22/TCGCardShopSimulator-Mods/main/SmartWorkerRestock/NexusMods/main_1920x1080.jpg[/img][/center]
+
+[line]
+
+[size=5][b][color=#E0B13A]Main features[/color][/b][/size]
+
+[size=4][b][color=#E9DCB5]📦 Automatic orders[/color][/b][/size]
+[size=3]Every 45 seconds (configurable):
+[list=1]
+[*][b]What the shelves need[/b]: every shop shelf compartment filled at 80 % or less counts the items missing to fill it.
+[*][b]What you already have[/b]: boxes stored on warehouse shelves, every box lying around (floor, carried, taken out of a shelf) and boxes already ordered and on their way.
+[*][b]What it orders[/b]: only the difference, in whole boxes, emptiest shelves first.
+[/list]
+[list]
+[*][b]Never touches your money reserve[/b] (500 by default) and only orders items whose [b]license you bought[/b].
+[*][b]Paid exactly like the game's restock checkout[/b]: item cost, delivery fee, transactions, daily report and shop experience.
+[*]An item just ordered is not ordered again for 3 minutes, so boxes still on their way (for example on a Pallet Delivery truck) are [b]never ordered twice[/b].
+[/list][/size]
+
+[size=4][b][color=#E9DCB5]🔁 Opened boxes first[/color][/b][/size]
+[size=3][list]
+[*]When a worker is about to open a full box, he takes the [b]emptiest opened box[/b] of the same item and size instead, on the floor or stored on a warehouse shelf.
+[*]Never a box another worker is already using.
+[*]It runs [b]after[/b] the game and the other worker mods have made their choice, so it never gets in their way.
+[/list][/size]
+
+[size=4][b][color=#E9DCB5]🧾 Transparent[/color][/b][/size]
+[size=3]The BepInEx log shows every order ("Workers ordered ...") and every time a worker takes an opened box instead of a full one.[/size]
+
+[spoiler][size=3][b]Settings[/b] ([i]BepInEx/config/gab.tcgshop.smartworkerrestock.cfg[/i], also editable in game with the Configuration Manager)
+[list]
+[*][b]Enabled[/b] (true): master switch.
+[*][b]RequireHiredWorker[/b] (true): only order while a worker is on the clock.
+[*][b]CheckIntervalSeconds[/b] (45): time between two stock checks.
+[*][b]OrderBelowFillPercent[/b] (80 %): a compartment needs stock at or below this fill level.
+[*][b]ExtraBoxesInReserve[/b] (0): extra boxes to keep for each item that needs stock.
+[*][b]MoneyReserve[/b] (500): money automatic orders never spend.
+[*][b]MaxItemTypesPerOrder[/b] (20): different items per order, emptiest shelves first.
+[*][b]ReorderCooldownSeconds[/b] (180): wait before ordering the same item again.
+[*][b]PreferBigBox[/b] (true): big boxes when both sizes are unlocked.
+[*][b]UseOpenedBoxesFirst[/b] (true): opened boxes before full ones.
+[/list][/size][/spoiler]
+
+[line]
+
+[size=5][b][color=#E0B13A]Installation instructions[/color][/b][/size]
+
+[size=3][list=1]
+[*]Install [url=https://github.com/BepInEx/BepInEx/releases]BepInEx 5.4.23[/url] if it is not already in the game.
+[*][b][color=#E06B55]Remove Auto Worker Order[/color][/b] ([i]AutoWorkerOrder.dll[/i] in [i]BepInEx/plugins[/i]). Smart Worker Restock stays idle while it is installed, so the two never order at the same time.
+[*]Install with [b]Vortex[/b], or extract the archive into the game folder: you should get [i]BepInEx/plugins/SmartWorkerRestock/SmartWorkerRestock.dll[/i].
+[*]Launch the game: the BepInEx log shows "Smart Worker Restock 1.2.0 loaded."
+[/list][/size]
+
+[line]
+
+[size=5][b][color=#E0B13A]Requirements[/color][/b][/size]
+
+[size=3][list]
+[*][b]TCG Card Shop Simulator[/b], latest version.
+[*][url=https://github.com/BepInEx/BepInEx/releases]BepInEx 5.4.23[/url].
+[*]At least one hired worker (or turn [i]RequireHiredWorker[/i] off).
+[/list]
+[b]Compatibility[/b]
+[list]
+[*][color=#7FB77E]✔[/color] Works alongside Worker AI Overhaul, Staff Overhaul, QOL Events & Weather, Pallet Delivery and other worker mods.
+[*][color=#E06B55]✘[/color] [b]Replaces Auto Worker Order[/b]: do not use both.
+[/list][/size]
+
+[line]
+
+[size=5][b][color=#E0B13A]Shout outs[/color][/b][/size]
+
+[size=3][list]
+[*]Many thanks to [b]y46056s[/b], whose [b]Auto Worker Order[/b] inspired this mod. Smart Worker Restock is a rewrite from scratch: no code copied.
+[*]The [b]BepInEx[/b] and [b]Harmony[/b] teams, without whom no mod would exist.
+[*]The developers of [b]TCG Card Shop Simulator[/b].
+[/list][/size]
+
+[quote][size=2][b][color=#E0B13A]🤖 AI-made.[/color][/b] This mod was written by an AI (Claude). I'm a developer, but I did not review its code: I made it simply to be able to play and enjoy the game. It is shared as is; use it at your own risk. Bug reports are welcome in the comments or on [url=https://github.com/d3Ex22/TCGCardShopSimulator-Mods/issues]GitHub[/url].[/size][/quote]
+
+[spoiler][size=3][b]Changelog[/b]
+[list]
+[*][b]1.2.0[/b]: first public release. Automatic orders counting stored, loose and incoming boxes; opened boxes first; settings cleaned up.
+[/list][/size][/spoiler]
