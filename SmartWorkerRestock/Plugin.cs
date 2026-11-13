@@ -9,8 +9,8 @@ using UnityEngine;
 namespace SmartWorkerRestock
 {
     /// <summary>
-    /// Smart Worker Restock: workers order the stock the shop shelves need, counting what is really available, and use up
-    /// opened boxes before opening new ones. Replaces "Auto Worker Order" (stays idle while that mod is loaded).
+    /// Smart Worker Restock: workers order the stock the shop shelves need, counting what is really available, use up
+    /// opened boxes before opening new ones, and restock the emptiest shelves first. Replaces "Auto Worker Order" (stays idle while that mod is loaded).
     ///
     /// Why a new mod: the game now keeps boxes stored on warehouse shelves as data records (StoredBoxRecord) instead of box
     /// objects. Auto Worker Order only counts box objects, so it saw an empty warehouse and reordered every pass (confirmed
@@ -20,7 +20,7 @@ namespace SmartWorkerRestock
     public class Plugin : BaseUnityPlugin
     {
         public const string Guid = "gab.tcgshop.smartworkerrestock";
-        public const string Version = "1.2.0";
+        public const string Version = "1.3.0";
 
         internal static Plugin Instance;
         internal static ManualLogSource Log;
@@ -28,6 +28,7 @@ namespace SmartWorkerRestock
         internal ConfigEntry<bool> Enabled, RequireWorker, PreferBigBox, PreferOpenedBoxes;
         internal ConfigEntry<int> OrderBelowPercent, ExtraBoxesInReserve, MaxItemTypesPerOrder, ReorderCooldownSeconds;
         internal ConfigEntry<float> CheckIntervalSeconds, MoneyReserve;
+        internal ConfigEntry<ShelfPriority> RestockPriorityMode;
 
         private float _next;
         private bool _blockedByAwo, _awoChecked;
@@ -37,7 +38,7 @@ namespace SmartWorkerRestock
             Instance = this;
             Log = Logger;
             const string g = "1. General", o = "2. Ordering", w = "3. Workers";
-            Enabled = Config.Bind(g, "Enabled", true, "Master switch: automatic orders and opened boxes first.");
+            Enabled = Config.Bind(g, "Enabled", true, "Master switch: automatic orders, opened boxes first and emptiest shelves first.");
             RequireWorker = Config.Bind(o, "RequireHiredWorker", true, "Only order while at least one worker is on the clock.");
             CheckIntervalSeconds = Config.Bind(o, "CheckIntervalSeconds", 45f, "Seconds between two stock checks.");
             OrderBelowPercent = Config.Bind(o, "OrderBelowFillPercent", 80, new ConfigDescription(
@@ -57,7 +58,13 @@ namespace SmartWorkerRestock
             PreferOpenedBoxes = Config.Bind(w, "UseOpenedBoxesFirst", true,
                 "When a worker would open a full box, he takes the emptiest opened box of the same item instead (on the floor or stored on a warehouse shelf).");
 
-            BoxPreference.Patch(new Harmony(Guid));
+            RestockPriorityMode = Config.Bind(w, "RestockPriority", ShelfPriority.LowestCount,
+                "Which shop compartment workers restock first. LowestCount: the one holding the fewest items. " +
+                "LowestFillPercent: the one with the lowest fill percentage. GameDefault: the game's random choice.");
+
+            var harmony = new Harmony(Guid);
+            BoxPreference.Patch(harmony);
+            RestockPriority.Patch(harmony);
             Log.LogInfo($"Smart Worker Restock {Version} loaded.");
         }
 

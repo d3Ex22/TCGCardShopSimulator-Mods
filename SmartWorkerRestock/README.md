@@ -2,7 +2,8 @@
 
 ![Smart Worker Restock](NexusMods/header_1400x400.jpg)
 
-Your workers order the stock your shop shelves need, and use up opened boxes before opening new ones.
+Your workers order the stock your shop shelves need, use up opened boxes before opening new ones, and restock the
+emptiest shelves first.
 
 **Smart Worker Restock is a rewrite of [Auto Worker Order](#credits)**, built for the **latest version of TCG Card Shop
 Simulator** and to **work alongside the other worker mods** (Worker AI Overhaul, Staff Overhaul, QOL Events & Weather,
@@ -49,6 +50,18 @@ there), he takes the emptiest opened box of the same item and size instead, whet
 warehouse shelf, and never one another worker is already using. This
 runs after the game and the other worker mods have made their choice, so it does not get in their way.
 
+### Emptiest shelves first
+
+In the base game, a worker picks the item to restock and the shelf compartment to fill at random (and a lone worker
+always fills the first compartment found). With Smart Worker Restock:
+
+- he restocks the item whose shelf compartment is the emptiest, among the items he can find a box of right now;
+- holding a box, he fills the emptiest labeled compartment of that item, the nearest one on a tie.
+
+Compartments another worker is already walking to are skipped, and workers fetching a box of the same item spread over
+its emptiest compartments. "Emptiest" means the fewest items by default, or the lowest fill percentage
+(`RestockPriority`); `GameDefault` keeps the game's random choice. Unlabeled compartments are left to the game.
+
 ## Installation
 
 1. Install [BepInEx 5.4.23](https://github.com/BepInEx/BepInEx/releases).
@@ -61,7 +74,7 @@ runs after the game and the other worker mods have made their choice, so it does
 
 | Setting | Default | |
 |---|---|---|
-| `Enabled` | true | Master switch: automatic orders and opened boxes first |
+| `Enabled` | true | Master switch: automatic orders, opened boxes first, emptiest shelves first |
 | `RequireHiredWorker` | true | Only while a worker is on the clock |
 | `CheckIntervalSeconds` | 45 | Time between two stock checks |
 | `OrderBelowFillPercent` | 80 % | A compartment needs stock at or below this fill level |
@@ -71,6 +84,7 @@ runs after the game and the other worker mods have made their choice, so it does
 | `ReorderCooldownSeconds` | 180 | Wait before ordering the same item again |
 | `PreferBigBox` | true | Big boxes when both sizes are unlocked |
 | `UseOpenedBoxesFirst` | true | Opened boxes before full ones |
+| `RestockPriority` | LowestCount | Compartment restocked first: `LowestCount`, `LowestFillPercent` or `GameDefault` (random) |
 
 The BepInEx log shows every order ("Workers ordered ...") and every time a worker takes an opened box instead of a
 full one.

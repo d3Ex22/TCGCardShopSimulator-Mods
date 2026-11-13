@@ -4,7 +4,7 @@ BepInEx mods for **TCG Card Shop Simulator**. Each mod lives in its own folder a
 
 | Mod | What it does |
 |---|---|
-| [Smart Worker Restock](SmartWorkerRestock/) | Workers order the stock the shelves need, counting what is really in the warehouse, and use up opened boxes first. Replaces Auto Worker Order |
+| [Smart Worker Restock](SmartWorkerRestock/) | Workers order the stock the shelves need, counting what is really in the warehouse, use up opened boxes first and restock the emptiest shelves first. Replaces Auto Worker Order |
 
 ## Install
 

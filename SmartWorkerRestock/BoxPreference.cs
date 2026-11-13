@@ -31,11 +31,12 @@ namespace SmartWorkerRestock
             h.Patch(m, postfix: new HarmonyMethod(typeof(BoxPreference), nameof(Postfix)) { priority = Priority.Last });
         }
 
-        private static void Postfix(Worker __instance)
+        private static void Postfix(Worker __instance, bool __runOriginal)
         {
             try
             {
-                if (Plugin.Blocked || !Plugin.Instance.PreferOpenedBoxes.Value || __instance == null) return;
+                // Another mod may skip the game's search (e.g. to send the worker to rest): the box field then holds an old box
+                if (!__runOriginal || Plugin.Blocked || !Plugin.Instance.PreferOpenedBoxes.Value || __instance == null) return;
                 var chosen = CurrentItemBox.GetValue(__instance) as InteractablePackagingBox_Item;
                 if (chosen == null || chosen.m_ItemCompartment == null) return;
                 int chosenCount = chosen.m_ItemCompartment.GetItemCount(), chosenMax = chosen.m_ItemCompartment.GetMaxItemCount();
@@ -127,8 +128,16 @@ namespace SmartWorkerRestock
             Transform dest = box.transform;
             var stored = box.GetBoxStoredCompartment();
             if (stored != null && stored.m_CustomerStandLoc != null) dest = stored.m_CustomerStandLoc.transform;
+            if (!StartPath(w, dest)) return false;
+            CurrentItemBox.SetValue(w, box);
+            return true;
+        }
+
+        /// <summary>Sends the worker walking to dest, the way the game's Attempt* methods end.</summary>
+        internal static bool StartPath(Worker w, Transform dest)
+        {
             object seeker = SeekerField?.GetValue(w); // by reflection: its type lives in the pathfinding assembly
-            if (seeker == null || dest == null) return false;
+            if (seeker == null || dest == null || OnPathComplete == null) return false;
             if (!_looked)
             {
                 _looked = true;
@@ -140,7 +149,6 @@ namespace SmartWorkerRestock
                 }
             }
             if (_startPath == null) return false;
-            CurrentItemBox.SetValue(w, box);
             w.m_TargetTransform = dest;
             _startPath.Invoke(seeker, new object[] { w.transform.position, dest.position, Delegate.CreateDelegate(_pathDelegate, w, OnPathComplete) });
             WaitingForPath?.SetValue(w, true);

@@ -1,19 +1,20 @@
 [center][img]https://raw.githubusercontent.com/d3Ex22/TCGCardShopSimulator-Mods/main/SmartWorkerRestock/NexusMods/header_1400x400.jpg[/img]
 
-[size=5][b][color=#E0B13A]Your workers order what your shelves need, and finish opened boxes first.[/color][/b][/size]
+[size=5][b][color=#E0B13A]Your workers order what your shelves need, finish opened boxes first and refill the emptiest shelves first.[/color][/b][/size]
 [size=3][color=#C9C9C9]A rewrite of Auto Worker Order for the latest game version, made to work alongside other worker mods.[/color][/size]
 
-[url=https://github.com/d3Ex22/TCGCardShopSimulator-Mods/tree/main/SmartWorkerRestock][img]https://img.shields.io/badge/source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white[/img][/url] [img]https://img.shields.io/badge/version-1.2.0-B3402E?style=for-the-badge[/img] [img]https://img.shields.io/badge/BepInEx-5.4.23-3E7B3A?style=for-the-badge[/img] [img]https://img.shields.io/badge/AI--made-Claude-E0B13A?style=for-the-badge[/img][/center]
+[url=https://github.com/d3Ex22/TCGCardShopSimulator-Mods/tree/main/SmartWorkerRestock][img]https://img.shields.io/badge/source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white[/img][/url] [img]https://img.shields.io/badge/version-1.3.0-B3402E?style=for-the-badge[/img] [img]https://img.shields.io/badge/BepInEx-5.4.23-3E7B3A?style=for-the-badge[/img] [img]https://img.shields.io/badge/AI--made-Claude-E0B13A?style=for-the-badge[/img][/center]
 
 [line]
 
 [size=5][b][color=#E0B13A]Description[/color][/b][/size]
 
-[size=3]Hired workers can restock your shop, but someone still has to [b]order the stock[/b], and the game sends them to [b]new boxes first[/b] while half-used ones pile up in the warehouse. Smart Worker Restock takes care of both:
+[size=3]Hired workers can restock your shop, but someone still has to [b]order the stock[/b], the game sends them to [b]new boxes first[/b] while half-used ones pile up in the warehouse, and they pick the shelf to refill [b]at random[/b]. Smart Worker Restock takes care of all three:
 
 [list]
 [*][b]Automatic orders[/b] that buy only what your shelves really need, counting the stock you already have.
 [*][b]Opened boxes first[/b]: workers empty the half-used boxes before opening new ones.
+[*][b]Emptiest shelves first[/b]: workers refill the shelves that are running out before the ones that are almost full.
 [/list]
 
 [quote][b][color=#E0B13A]Why a rewrite of Auto Worker Order?[/color][/b]
@@ -50,6 +51,15 @@ It also decided what you could order from your shop level instead of the license
 [*]It runs [b]after[/b] the game and the other worker mods have made their choice, so it never gets in their way.
 [/list][/size]
 
+[size=4][b][color=#E9DCB5]📉 Emptiest shelves first[/color][/b][/size]
+[size=3]In the base game, a worker picks the item to restock and the shelf compartment to fill at random (and a lone worker always fills the first compartment found). With Smart Worker Restock:
+[list]
+[*]He restocks the item whose shelf compartment is the [b]emptiest[/b], among the items he can find a box of right now.
+[*]Holding a box, he fills the [b]emptiest labeled compartment[/b] of that item, the nearest one on a tie.
+[*]Compartments another worker is already walking to are skipped, and workers fetching the same item [b]spread over its emptiest compartments[/b].
+[*]"Emptiest" means the fewest items (default) or the lowest fill percentage; [i]GameDefault[/i] keeps the game's random choice. Unlabeled compartments are left to the game.
+[/list][/size]
+
 [size=4][b][color=#E9DCB5]🧾 Transparent[/color][/b][/size]
 [size=3]The BepInEx log shows every order ("Workers ordered ...") and every time a worker takes an opened box instead of a full one.[/size]
 
@@ -65,6 +75,7 @@ It also decided what you could order from your shop level instead of the license
 [*][b]ReorderCooldownSeconds[/b] (180): wait before ordering the same item again.
 [*][b]PreferBigBox[/b] (true): big boxes when both sizes are unlocked.
 [*][b]UseOpenedBoxesFirst[/b] (true): opened boxes before full ones.
+[*][b]RestockPriority[/b] (LowestCount): compartment restocked first: LowestCount, LowestFillPercent or GameDefault (random).
 [/list][/size][/spoiler]
 
 [line]
@@ -75,7 +86,7 @@ It also decided what you could order from your shop level instead of the license
 [*]Install [url=https://github.com/BepInEx/BepInEx/releases]BepInEx 5.4.23[/url] if it is not already in the game.
 [*][b][color=#E06B55]Remove Auto Worker Order[/color][/b] ([i]AutoWorkerOrder.dll[/i] in [i]BepInEx/plugins[/i]). Smart Worker Restock stays idle while it is installed, so the two never order at the same time.
 [*]Install with [b]Vortex[/b], or extract the archive into the game folder: you should get [i]BepInEx/plugins/SmartWorkerRestock/SmartWorkerRestock.dll[/i].
-[*]Launch the game: the BepInEx log shows "Smart Worker Restock 1.2.0 loaded."
+[*]Launch the game: the BepInEx log shows "Smart Worker Restock 1.3.0 loaded."
 [/list][/size]
 
 [line]
@@ -107,5 +118,6 @@ It also decided what you could order from your shop level instead of the license
 
 [spoiler][size=3][b]Changelog[/b]
 [list]
+[*][b]1.3.0[/b]: emptiest shelves first (new [i]RestockPriority[/i] setting). Opened boxes first no longer acts when another mod skipped the game's box search.
 [*][b]1.2.0[/b]: first public release. Automatic orders counting stored, loose and incoming boxes; opened boxes first; settings cleaned up.
 [/list][/size][/spoiler]
