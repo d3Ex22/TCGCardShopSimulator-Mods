@@ -7,7 +7,8 @@
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
     <Optimize>true</Optimize>
-    <DebugType>none</DebugType>
+    <!-- Portable symbols: ScriptEngine refuses a DLL without its .pdb (not shipped in the release zip) -->
+    <DebugType>portable</DebugType>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <!-- Game folder: change it if the game is installed elsewhere -->
@@ -41,6 +42,12 @@
   <Target Name="DeployToGame" AfterTargets="Build" Condition="'$(Deploy)' == 'true'">
     <MakeDir Directories="$(GameDir)\BepInEx\plugins/SmartWorkerRestock" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(GameDir)\BepInEx\plugins/SmartWorkerRestock" />
+  </Target>
+
+  <!-- Development: dotnet build -p:DeployScripts=true copies the DLL and its symbols to BepInEx/scripts (ScriptEngine hot reload) -->
+  <Target Name="DeployToScripts" AfterTargets="Build" Condition="'$(DeployScripts)' == 'true'">
+    <MakeDir Directories="$(GameDir)\BepInEx\scripts\SmartWorkerRestock" />
+    <Copy SourceFiles="$(TargetPath);$(TargetDir)$(TargetName).pdb" DestinationFolder="$(GameDir)\BepInEx\scripts\SmartWorkerRestock" />
   </Target>
 
 </Project>

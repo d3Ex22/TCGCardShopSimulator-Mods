@@ -20,12 +20,12 @@ namespace SmartWorkerRestock
     public class Plugin : BaseUnityPlugin
     {
         public const string Guid = "gab.tcgshop.smartworkerrestock";
-        public const string Version = "1.3.0";
+        public const string Version = "1.4.0";
 
         internal static Plugin Instance;
         internal static ManualLogSource Log;
 
-        internal ConfigEntry<bool> Enabled, RequireWorker, PreferBigBox, PreferOpenedBoxes;
+        internal ConfigEntry<bool> Enabled, RequireWorker, PreferBigBox, PreferOpenedBoxes, HoldTakenBoxes;
         internal ConfigEntry<int> OrderBelowPercent, ExtraBoxesInReserve, MaxItemTypesPerOrder, ReorderCooldownSeconds;
         internal ConfigEntry<float> CheckIntervalSeconds, MoneyReserve;
         internal ConfigEntry<ShelfPriority> RestockPriorityMode;
@@ -62,15 +62,23 @@ namespace SmartWorkerRestock
                 "Which shop compartment workers restock first. LowestCount: the one holding the fewest items. " +
                 "LowestFillPercent: the one with the lowest fill percentage. GameDefault: the game's random choice.");
 
-            var harmony = new Harmony(Guid);
-            BoxPreference.Patch(harmony);
-            RestockPriority.Patch(harmony);
+            HoldTakenBoxes = Config.Bind(w, "KeepTakenBoxesInShelf", true,
+                "A box a worker goes to take from a warehouse shelf stays still in the shelf until he picks it up, instead of " +
+                "being pushed out onto the floor (game behaviour where shelves stand side by side). If he changes his mind, " +
+                "the box is stored in the shelf again.");
+
+            // One id per load (ScriptEngine reload: the old instance is destroyed after the new one started)
+            _harmony = new Harmony(Guid + "." + DateTime.Now.Ticks);
+            BoxPreference.Patch(_harmony);
+            RestockPriority.Patch(_harmony);
+            StoredBoxHold.Patch(_harmony);
             Log.LogInfo($"Smart Worker Restock {Version} loaded.");
         }
 
         private void Update()
         {
             if (!Enabled.Value) return;
+            StoredBoxHold.Tick();
             if (!_awoChecked)
             {
                 _awoChecked = true;
@@ -82,6 +90,16 @@ namespace SmartWorkerRestock
             if (_blockedByAwo || Time.unscaledTime < _next) return;
             _next = Time.unscaledTime + Mathf.Max(10f, CheckIntervalSeconds.Value);
             OrderPlanner.Run();
+        }
+
+        private Harmony _harmony;
+
+        /// <summary>Unloaded (game closing, or a reload of BepInEx/scripts during development): every patch goes.</summary>
+        private void OnDestroy()
+        {
+            _harmony?.UnpatchSelf();
+            StoredBoxHold.Clear();
+            if (Instance == this) Instance = null;
         }
 
         internal static bool Blocked => Instance == null || !Instance.Enabled.Value || Instance._blockedByAwo;

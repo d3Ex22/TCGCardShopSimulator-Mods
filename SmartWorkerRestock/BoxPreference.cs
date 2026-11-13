@@ -106,7 +106,7 @@ namespace SmartWorkerRestock
         /// Turns a box the game just took out of a warehouse shelf back into that shelf's data record, the way the game
         /// itself stores a box (InteractablePackagingBox_Item.OnFinishLerp: record added, meshes hidden, OnDestroyed).
         /// </summary>
-        private static bool PutBack(InteractablePackagingBox_Item box)
+        internal static bool PutBack(InteractablePackagingBox_Item box)
         {
             var shelf = box.GetBoxStoredCompartment();
             if (shelf == null || box.m_ItemCompartment == null) return false;

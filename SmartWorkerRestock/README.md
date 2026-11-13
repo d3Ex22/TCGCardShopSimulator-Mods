@@ -2,10 +2,11 @@
 
 ![Smart Worker Restock](NexusMods/header_1400x400.jpg)
 
-Your workers order the stock your shop shelves need, use up opened boxes before opening new ones, and restock the
-emptiest shelves first.
+Your workers order the stock your shop shelves need, use up opened boxes before opening new ones, restock the
+emptiest shelves first, and take boxes from warehouse shelves without knocking them onto the floor.
 
-**Smart Worker Restock is a rewrite of [Auto Worker Order](#credits)**, built for the **latest version of TCG Card Shop
+**Smart Worker Restock started as a from-scratch rewrite of [Auto Worker Order](#credits)** and has grown well beyond it
+(opened boxes, emptiest shelves, boxes kept in the warehouse shelves). It is built for the **latest version of TCG Card Shop
 Simulator** and to **work alongside the other worker mods** (Worker AI Overhaul, Staff Overhaul, QOL Events & Weather,
 Pallet Delivery...). It replaces Auto Worker Order: remove that mod (Smart Worker Restock stays idle while it is
 installed, so the two never order at the same time).
@@ -13,7 +14,7 @@ installed, so the two never order at the same time).
 > **AI-made.** This mod was written by an AI (Claude). I'm a developer, but I did not review its code: I made it
 > simply to be able to play and enjoy the game. It is shared as is; use it at your own risk.
 
-## Why a rewrite
+## Why it started as a rewrite
 
 A recent game update changed how boxes are stored: a box put on a warehouse shelf is now kept as data, and the box
 object only comes back when someone takes it. Auto Worker Order predates that change and only counts box objects, so:
@@ -62,6 +63,17 @@ Compartments another worker is already walking to are skipped, and workers fetch
 its emptiest compartments. "Emptiest" means the fewest items by default, or the lowest fill percentage
 (`RestockPriority`); `GameDefault` keeps the game's random choice. Unlabeled compartments are left to the game.
 
+### Boxes stay in the warehouse shelf
+
+When a worker decides to take a box stored on a warehouse shelf, the game turns it back into a real box right away, with
+physics on, while the worker is still on his way. Where shelves stand side by side, that box overlaps the next shelf and
+gets pushed out onto the floor, and the worker ends up picking it up from the floor. With Smart Worker Restock:
+
+- the box stays still in its shelf until the worker picks it up;
+- if no worker wants it any more for 3 seconds (he changed his mind), it is stored in the shelf again, as if it had never
+  been taken out, so you can take or move it normally;
+- if its shelf has no room left by then (you stored another box there), it is set down in front of the shelf.
+
 ## Installation
 
 1. Install [BepInEx 5.4.23](https://github.com/BepInEx/BepInEx/releases).
@@ -74,7 +86,7 @@ its emptiest compartments. "Emptiest" means the fewest items by default, or the 
 
 | Setting | Default | |
 |---|---|---|
-| `Enabled` | true | Master switch: automatic orders, opened boxes first, emptiest shelves first |
+| `Enabled` | true | Master switch for everything below |
 | `RequireHiredWorker` | true | Only while a worker is on the clock |
 | `CheckIntervalSeconds` | 45 | Time between two stock checks |
 | `OrderBelowFillPercent` | 80 % | A compartment needs stock at or below this fill level |
@@ -85,9 +97,10 @@ its emptiest compartments. "Emptiest" means the fewest items by default, or the 
 | `PreferBigBox` | true | Big boxes when both sizes are unlocked |
 | `UseOpenedBoxesFirst` | true | Opened boxes before full ones |
 | `RestockPriority` | LowestCount | Compartment restocked first: `LowestCount`, `LowestFillPercent` or `GameDefault` (random) |
+| `KeepTakenBoxesInShelf` | true | A box a worker goes to take stays in its warehouse shelf until he picks it up |
 
-The BepInEx log shows every order ("Workers ordered ...") and every time a worker takes an opened box instead of a
-full one.
+The BepInEx log shows every order ("Workers ordered ..."), every time a worker takes an opened box instead of a full
+one, and every box a worker left after taking it out of a shelf.
 
 ## Credits
 
@@ -101,3 +114,6 @@ dotnet build -c Release -p:Deploy=true
 
 Copies the DLL into the game's `BepInEx/plugins/SmartWorkerRestock/`. If the game is not in
 `D:\Games\TCG Card Shop Simulator`, add `-p:GameDir="C:\path\to\the\game"`. Requires the .NET SDK 8 or newer.
+
+For development, `-p:DeployScripts=true` copies the DLL and its symbols to `BepInEx/scripts/SmartWorkerRestock/` instead,
+for [ScriptEngine](https://github.com/BepInEx/BepInEx.Debug) hot reload (the mod removes its patches when unloaded).
