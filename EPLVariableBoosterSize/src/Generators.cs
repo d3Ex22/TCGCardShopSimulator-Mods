@@ -94,7 +94,7 @@ namespace VariableBoosterSize
             {
                 if (!Enum.TryParse(def.ItemType, out EItemType type))
                 {
-                    Plugin.Log.LogWarning($"{def.ItemType} ({def.Source}): no such pack installed; skipped");
+                    Plugin.Log.LogInfo($"{def.ItemType} ({def.Source}): pack not installed, skipped");
                     continue;
                 }
                 var config = SafeConfig(items, type);
@@ -124,7 +124,7 @@ namespace VariableBoosterSize
                 service.SetPackGenerator(type, gen);
                 Active[type] = gen;
                 if (config.CanHaveGodPacks)
-                    Plugin.Log.LogWarning($"{def.ItemType}: god packs stay EPL's own ({Math.Min(7, slots.Count)} cards)");
+                    Plugin.Log.LogInfo($"{def.ItemType}: its god packs stay EPL's own (7 cards)");
                 done++;
             }
             Plugin.Log.LogInfo($"{done} pack(s) with their own slots: " + string.Join(", ", Active.Select(kv => $"{kv.Key} ({kv.Value.Size})")));

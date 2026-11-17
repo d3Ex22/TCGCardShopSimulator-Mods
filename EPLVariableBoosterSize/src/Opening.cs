@@ -8,13 +8,15 @@ namespace VariableBoosterSize
 {
     /// <summary>
     /// The game's pack opening has 7 card places (m_Card3dUIList, their animations m_CardAnimList and the final screen
-    /// places m_ShowAllCardPosList) and ends the card by card reveal at the 7th card. For a pack of more cards only:
-    /// - when it opens, copies of the 7th card place are added and the lists get exactly the pack's size (EPL fills as
-    ///   many places as the list holds); the pile of cards in front of the pack keeps the game's depth;
+    /// places m_ShowAllCardPosList) and ends the card by card reveal at the 7th card. For a pack of ours (any size but 7):
+    /// - when it opens, the lists get exactly the pack's size (EPL fills as many places as the list holds): the game's
+    ///   first places for a smaller pack, plus copies of the 7th card place for a bigger one, whose pile in front of the
+    ///   pack keeps the game's depth;
     /// - the card by card reveal goes on to the last card (the "7" and "6" the game compares the card index with follow
     ///   the pack's size);
-    /// - the final screen shows the cards on two rows fitted to the player's screen.
-    /// Packs of 7 cards or fewer get the game's own lists back, untouched.
+    /// - the final screen shows a smaller pack on one row spread between the game's first and last places, a bigger one
+    ///   on two rows fitted to the player's screen.
+    /// Other packs (the game's, other EPL packs) get the game's own lists back, untouched.
     /// </summary>
     internal static class Opening
     {
@@ -42,10 +44,17 @@ namespace VariableBoosterSize
             _item = AccessTools.FieldRefAccess<CardOpeningSequence, Item>("m_CurrentItem");
             // Before EPL's own OpenScreen prefix, which fills as many card places as the list holds.
             Plugin.Harmony.Patch(AccessTools.Method(typeof(CardOpeningSequence), "OpenScreen"),
-                prefix: new HarmonyMethod(typeof(Opening), nameof(OpenPrefix)) { priority = Priority.First });
+                prefix: new HarmonyMethod(typeof(Opening), nameof(OpenPrefix)) { priority = Priority.First },
+                postfix: new HarmonyMethod(typeof(Opening), nameof(OpenPostfix)));
+            _cards = AccessTools.FieldRefAccess<CardOpeningSequence, List<CardData>>("m_ManualOpenCardDataList");
             _patched = 0;
+            // First: the game's final screen places back where the game put them before any other mod reads them.
             Plugin.Harmony.Patch(AccessTools.Method(typeof(CardOpeningSequence), "Update"),
-                prefix: new HarmonyMethod(typeof(Opening), nameof(UpdatePrefix)),
+                prefix: new HarmonyMethod(typeof(Opening), nameof(PlacesPrefix)) { priority = Priority.First });
+            Plugin.Harmony.Patch(AccessTools.Method(typeof(CardOpeningSequence), "Update"),
+                // Last: MyCurio Products also places the final screen's cards when it starts (for its short packs, from
+                // positions it keeps from an earlier pack); ours must have the last word for our packs.
+                prefix: new HarmonyMethod(typeof(Opening), nameof(UpdatePrefix)) { priority = Priority.Last },
                 transpiler: new HarmonyMethod(typeof(Opening), nameof(UpdateTranspiler)) { priority = Priority.Last });
             if (_patched != 4) Plugin.Log.LogWarning($"pack opening: {_patched} of the game's 4 card count checks found; packs past 7 cards may end early");
         }
@@ -98,15 +107,30 @@ namespace VariableBoosterSize
         {
             try
             {
+                Know(__instance);   // every pack: the game's places are kept from the scene's first opening
                 var item = _item(__instance);
                 int size = item != null ? Generators.SizeOf(item.GetItemType()) : 0;
-                if (size > __instance.m_Card3dUIList.Count || _size > 0) Use(__instance, size);
+                if (size > 0 || _size > 0) Use(__instance, size);
             }
             catch (Exception e)
             {
                 Plugin.Log.LogError("pack opening: " + e);
                 try { if (_seq == __instance) UseGameLists(__instance); } catch { }
             }
+        }
+
+        // A god pack is made by EPL's own god pack generator (7 cards), not ours: the opening follows the cards drawn.
+        private static AccessTools.FieldRef<CardOpeningSequence, List<CardData>> _cards;
+
+        private static void OpenPostfix(CardOpeningSequence __instance)
+        {
+            if (_size == 0 || __instance != _seq) return;
+            try
+            {
+                int drawn = _cards(__instance)?.Count ?? 0;
+                if (drawn > 0 && drawn != _size) Use(__instance, drawn);
+            }
+            catch (Exception e) { Plugin.Log.LogError("pack opening: " + e); }
         }
 
         /// <summary>Keeps the game's own lists of this opening (once per scene).</summary>
@@ -118,7 +142,58 @@ namespace VariableBoosterSize
             _seq = seq;
             _ui = seq.m_Card3dUIList; _anim = seq.m_CardAnimList; _pos = seq.m_ShowAllCardPosList;
             _gameSize = Math.Min(_ui.Count, Math.Min(_anim.Count, _pos.Count));
+            KeepPlaces();
         }
+
+        // The game's final screen places, as they are before any pack is shown. MyCurio Products moves the first of
+        // them for its short packs and leaves them moved: our layouts must not follow.
+        private static Vector3[] _placeLocal;
+        private static Quaternion[] _placeTurn;
+
+        private static void KeepPlaces()
+        {
+            _placeLocal = new Vector3[_gameSize];
+            _placeTurn = new Quaternion[_gameSize];
+            for (int i = 0; i < _gameSize; i++) { _placeLocal[i] = _pos[i].localPosition; _placeTurn[i] = _pos[i].localRotation; }
+            // The game's places are evenly spaced on a line. If they were already moved (the mod reloaded during a
+            // session), the first ones are rebuilt from the longest even run at the end of the line.
+            if (_gameSize < 3) return;
+            var step = _placeLocal[_gameSize - 1] - _placeLocal[_gameSize - 2];
+            int k = _gameSize - 2;
+            while (k > 0 && (_placeLocal[k] - _placeLocal[k - 1] - step).sqrMagnitude < 1e-8f) k--;
+            if (k == 0) return;
+            for (int i = k - 1; i >= 0; i--) { _placeLocal[i] = _placeLocal[i + 1] - step; _placeTurn[i] = _placeTurn[k]; }
+            Plugin.Log.LogInfo($"pack opening: the game's first {k} final screen place(s) were already moved, rebuilt");
+        }
+
+        /// <summary>
+        /// The game's own final screen places back to the game's positions. MyCurio Products moves the first ones for
+        /// its short packs, and reads the places again only when their number changes, which our packs do: without
+        /// this, it could read them still moved and later show a 7 card pack off centre.
+        /// </summary>
+        private static void RestorePlaces()
+        {
+            if (_placeLocal == null || _pos == null) return;
+            for (int i = 0; i < _gameSize; i++)
+            {
+                if (_pos[i] == null) continue;
+                _pos[i].localPosition = _placeLocal[i];
+                _pos[i].localRotation = _placeTurn[i];
+            }
+        }
+
+        private static bool _placesRestored;
+
+        // Every pack, at the very start of its final screen (before the other mods' own placing).
+        private static void PlacesPrefix(CardOpeningSequence __instance)
+        {
+            if (_placeLocal == null || __instance != _seq) return;
+            if (__instance.m_StateIndex == 7) { if (!_placesRestored) { _placesRestored = true; RestorePlaces(); } }
+            else _placesRestored = false;
+        }
+
+        private static Vector3 PlaceAt(int i) { var p = _pos[0].parent; return p != null ? p.TransformPoint(_placeLocal[i]) : _placeLocal[i]; }
+        private static Quaternion TurnAt(int i) { var p = _pos[0].parent; return p != null ? p.rotation * _placeTurn[i] : _placeTurn[i]; }
 
         private static void MakeRevealPos(int count)
         {
@@ -134,27 +209,49 @@ namespace VariableBoosterSize
         {
             Know(seq);
             Unscale();
-            if (size <= _gameSize) { UseGameLists(seq); return; }
+            if (size <= 0 || size == _gameSize) { UseGameLists(seq); return; }
 
-            Grow(size - _gameSize);
-            var ui = new List<Card3dUIGroup>(_ui.GetRange(0, _gameSize));
-            var anim = new List<Animation>(_anim.GetRange(0, _gameSize));
-            for (int i = 0; i < size - _gameSize; i++) { ui.Add(ExtraUi[i]); anim.Add(ExtraAnim[i]); }
-            MakeRevealPos(size);
-            // Until the final screen fits them to the screen: one row over the game's places.
-            for (int i = 0; i < size; i++)
+            List<Card3dUIGroup> ui;
+            List<Animation> anim;
+            if (size < _gameSize)
             {
-                float f = (float)i / (size - 1) * (_gameSize - 1);
-                int a = Mathf.Min((int)f, _gameSize - 2);
-                RevealPos[i].position = Vector3.Lerp(_pos[a].position, _pos[a + 1].position, f - a);
-                RevealPos[i].rotation = Quaternion.Slerp(_pos[a].rotation, _pos[a + 1].rotation, f - a);
+                // A smaller pack: the game's first card places only. The game and EPL hide just the cards of the list
+                // when a pack opens, so the places left out (and ours) are hidden here.
+                UseGameLists(seq);
+                ui = _ui.GetRange(0, size);
+                anim = _anim.GetRange(0, size);
+                for (int i = size; i < _gameSize; i++) if (_ui[i] != null && _ui[i].gameObject.activeSelf) _ui[i].gameObject.SetActive(false);
             }
-            Repile(ui);
+            else
+            {
+                Grow(size - _gameSize);
+                ui = new List<Card3dUIGroup>(_ui.GetRange(0, _gameSize));
+                anim = new List<Animation>(_anim.GetRange(0, _gameSize));
+                for (int i = 0; i < size - _gameSize; i++) { ui.Add(ExtraUi[i]); anim.Add(ExtraAnim[i]); }
+                Repile(ui);
+            }
+            MakeRevealPos(size);
+            LayRow(size);
             seq.m_Card3dUIList = ui;
             seq.m_CardAnimList = anim;
             seq.m_ShowAllCardPosList = RevealPos.GetRange(0, size);
             _size = size;
             _fitted = false;
+        }
+
+        /// <summary>
+        /// One row spread between the game's first and last final screen places: a smaller pack's layout, and a bigger
+        /// one's until its two rows are fitted to the screen.
+        /// </summary>
+        private static void LayRow(int size)
+        {
+            for (int i = 0; i < size; i++)
+            {
+                float f = size == 1 ? (_gameSize - 1) * 0.5f : (float)i / (size - 1) * (_gameSize - 1);
+                int a = Mathf.Min((int)f, _gameSize - 2);
+                RevealPos[i].position = Vector3.Lerp(PlaceAt(a), PlaceAt(a + 1), f - a);
+                RevealPos[i].rotation = Quaternion.Slerp(TurnAt(a), TurnAt(a + 1), f - a);
+            }
         }
 
         /// <summary>The game's own lists and pile back; our card places hidden.</summary>
@@ -227,7 +324,13 @@ namespace VariableBoosterSize
             int state = __instance.m_StateIndex;
             if (state >= 7 && state <= 10)
             {
-                if (!_fitted && _size > 0) { _fitted = true; FitToScreen(_size); }
+                if (!_fitted && _size > 0)
+                {
+                    _fitted = true;
+                    // Laid out again now (another mod may have moved the places since the pack opened).
+                    if (_size > _gameSize) FitToScreen(_size);
+                    else LayRow(_size);
+                }
             }
             else if (_fitted)
             {
@@ -265,7 +368,7 @@ namespace VariableBoosterSize
                 var parent = _pos[0].parent;
                 var ct = cam.transform;
                 var gameW = new Vector3[_gameSize];
-                for (int i = 0; i < _gameSize; i++) gameW[i] = _pos[i].position;
+                for (int i = 0; i < _gameSize; i++) gameW[i] = PlaceAt(i);
                 float depth = Vector3.Dot((gameW[0] + gameW[_gameSize - 1]) * 0.5f - ct.position, ct.forward);
                 if (depth <= 0f) return;
 
@@ -296,7 +399,7 @@ namespace VariableBoosterSize
                     float y = 0.5f + (upper ? rowGap : -rowGap);
                     var t = RevealPos[i];
                     t.position = cam.ViewportToWorldPoint(new Vector3(x, y, upper ? depth : depth * Nearer));
-                    t.rotation = Quaternion.Slerp(_pos[a].rotation, _pos[a + 1].rotation, k);
+                    t.rotation = Quaternion.Slerp(TurnAt(a), TurnAt(a + 1), k);
 
                     var anim = _seq.m_CardAnimList[i].transform;
                     ScaledAnims.Add(anim);

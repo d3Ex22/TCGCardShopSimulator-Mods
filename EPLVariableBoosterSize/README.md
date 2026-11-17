@@ -2,9 +2,12 @@
 
 ![EPL Variable Booster Size](NexusMods/header_1400x400.jpg)
 
-An extension for Enhanced Prefab Loader (EPL): card packs
-of custom card sets can hold **more than 7 cards**. Pack your boosters like the real ones (11 cards for an old set,
-10 for a modern one) with a rarity table for every card slot, and open them in the game as usual.
+An extension for Enhanced Prefab Loader (EPL): card packs of custom card sets can hold **any number of cards**, not
+only 7. Pack your boosters like the real ones (11 cards for an old set, 10 for a modern one, 4 for a mini set) with a
+rarity table for every card slot, and open them in the game as usual.
+
+For the MyCurio Pokémon card sets, **EPL Variable Booster Size - MyCurio Suite** gives every booster its real size and
+real pull rates.
 
 > **AI-made.** This mod was written by an AI (Claude). I'm a developer, but I did not review its code: I made it
 > simply to be able to play and enjoy the game. It is shared as is; use it at your own risk.
@@ -12,23 +15,24 @@ of custom card sets can hold **more than 7 cards**. Pack your boosters like the 
 ## What it does
 
 EPL builds a pack from "slots": `Slot1` to `Slot7`, each with the chances of every rarity. Seven is its limit, and the
-game's pack opening is made for 7 cards too. This mod lifts both limits, for the packs that ask for it:
+game's pack opening is made for exactly 7 cards. This mod lifts both limits, for the packs that ask for it:
 
-- **Any number of slots**: `Slot8`, `Slot9` and so on, or ranges such as `Slot1-5`. One card is drawn per slot, with
-  the slot's rarity chances, like EPL's own packs (no duplicate in a pack unless the pack allows it).
-- **The pack opening shows every card**: the same card by card reveal as the game, going on to the last card, then all
-  the cards on the final screen, on **two rows** (the top row gets the extra card of an odd count).
-- **Fitted to your screen**: the final screen is laid out with your camera, whatever the resolution or the screen
-  shape (16:9, 16:10, 21:9...). The cards get smaller only when the rows would not fit.
-- **Only those packs change**: packs of 7 cards or fewer (vanilla packs and every other EPL pack) open exactly as
-  before, with the game's own final screen.
+- **Any number of slots**: `Slot8`, `Slot9` and so on, or ranges such as `Slot1-5`, or fewer than 7. One card is drawn
+  per slot, with the slot's rarity chances, like EPL's own packs (no duplicate in a pack unless the pack allows it).
+- **The pack opening follows the pack**: the same card by card reveal as the game, ending on the pack's last card.
+- **Final screen**:
+  - more than 7 cards: **two rows** (the top row gets the extra card of an odd count), fitted to your screen with your
+    camera, whatever the resolution or the screen shape (16:9, 16:10, 21:9...); the cards get smaller only when the
+    rows would not fit;
+  - fewer than 7 cards: **one row**, spread between the two ends of the game's own row.
+- **Only those packs change**: the game's packs and every other EPL pack open exactly as before.
 - The card sets' own card backs, foils and holo effects are kept: EPL still makes every card.
 - The auto pack opener goes through EPL's pack generation, so it gets all the cards of the pack too.
 
-**On its own, this mod adds no card to any pack.** Bigger packs need more than 7 slots, given by a card set mod or by you
-in a small file (see below).
+**On its own, this mod changes no pack.** A pack gets another size from a card set mod, from a pack file such as the
+MyCurio Suite, or from your own small file (see below).
 
-## Giving a pack more cards
+## Giving a pack another size
 
 ### In a card set mod (for set authors)
 
@@ -75,7 +79,7 @@ pack's `ItemType` (as written in its set's EPL JSON) and its slots:
 
 ## Limits
 
-- **God packs** keep EPL's own generation (7 cards).
+- **God packs** keep EPL's own generation (7 cards); the opening follows them.
 - More cards per pack is more value per pack: the pack's price is still the one set by its mod.
 
 ## Installation
@@ -97,6 +101,8 @@ next pack opened uses the new values).
 
 - Another mod that rewrites the game's pack opening screen for every pack may conflict; the log warns if the
   opening could not be patched.
+- MyCurio Products' own short packs (box contents) keep its opening; the final screen of our packs is laid out after
+  it, from the game's own places.
 
 ## Build
 

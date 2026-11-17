@@ -6,7 +6,7 @@ using HarmonyLib;
 namespace VariableBoosterSize
 {
     /// <summary>
-    /// Extends Enhanced Prefab Loader (EPL) card packs past its 7 cards. A pack can have any number of slots, given in
+    /// Enhanced Prefab Loader (EPL) card packs of any size, not only 7 cards. A pack can have any number of slots, given in
     /// its EPL item ("Slot8", "Slot9"... in SlotWeights, or ranges such as "Slot1-5") or in a separate *.packslots.json
     /// file that overrides a pack of another mod without editing it. The pack is generated through EPL's own pack
     /// generator API, and the game's pack opening shows every card: same card by card reveal, all cards on the final
@@ -19,7 +19,7 @@ namespace VariableBoosterSize
     {
         public const string Guid = "gab.tcgshop.eplvariableboostersize";
         public const string Name = "EPL Variable Booster Size";
-        public const string Version = "0.1.0";
+        public const string Version = "1.0.0";
 
         internal static ManualLogSource Log;
         internal static Harmony Harmony;
