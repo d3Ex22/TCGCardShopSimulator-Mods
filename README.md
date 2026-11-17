@@ -4,6 +4,7 @@ BepInEx mods for **TCG Card Shop Simulator**. Each mod lives in its own folder a
 
 | Mod | What it does |
 |---|---|
+| [EPL Variable Booster Size](EPLVariableBoosterSize/) | Enhanced Prefab Loader card packs of more than 7 cards: any number of slots per pack, every card shown when the pack opens, final screen on two rows fitted to the screen |
 | [Smart Worker Restock](SmartWorkerRestock/) | Workers order the stock the shelves need, counting what is really in the warehouse, use up opened boxes first, restock the emptiest shelves first and take boxes from warehouse shelves without knocking them off. Replaces Auto Worker Order |
 
 ## Install
@@ -27,3 +28,4 @@ dotnet build -c Release -p:Deploy=true
 - No code copied from other mods; ideas are reimplemented.
 - The game's code is never redistributed.
 - A mod never depends on another mod; compatibility fixes find other mods by reflection and do nothing if they are absent.
+  The one exception is an extension of a mod, named after it (EPL Variable Booster Size needs Enhanced Prefab Loader).
