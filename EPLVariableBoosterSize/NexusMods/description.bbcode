@@ -1,0 +1,89 @@
+[center][img]https://raw.githubusercontent.com/d3Ex22/TCGCardShopSimulator-Mods/main/EPLVariableBoosterSize/NexusMods/header_1400x400.jpg[/img]
+
+[size=5][b][color=#E0B13A]Boosters of more than 7 cards for Enhanced Prefab Loader card sets.[/color][/b][/size]
+[size=3][color=#C9C9C9]Pack custom boosters like the real ones (11 cards, 10 cards...) with a rarity table per slot, and open them in the game as usual.[/color][/size]
+
+[url=https://github.com/d3Ex22/TCGCardShopSimulator-Mods/tree/main/EPLVariableBoosterSize][img]https://img.shields.io/badge/source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white[/img][/url] [img]https://img.shields.io/badge/version-0.1.0-B3402E?style=for-the-badge[/img] [img]https://img.shields.io/badge/BepInEx-5.4.23-3E7B3A?style=for-the-badge[/img] [img]https://img.shields.io/badge/AI--made-Claude-E0B13A?style=for-the-badge[/img][/center]
+
+[line]
+
+[size=5][b][color=#E0B13A]Description[/color][/b][/size]
+
+[size=3][b]Enhanced Prefab Loader[/b] (EPL) builds a card pack from slots, [b]Slot1 to Slot7[/b], each with the chances of every rarity. Seven is its limit, and the game's pack opening is made for 7 cards too. This extension lifts both limits, only for the packs that ask for it:
+
+[list]
+[*][b]Any number of slots[/b]: Slot8, Slot9 and so on, or ranges such as Slot1-5. One card per slot, drawn with the slot's rarity chances, like EPL's own packs.
+[*][b]Every card shows up when you open the pack[/b]: the game's card by card reveal goes on to the last card.
+[*][b]Final screen on two rows[/b], fitted to your screen (any resolution, 16:9, 16:10, 21:9...).
+[*][b]Other packs are untouched[/b]: packs of 7 cards or fewer (vanilla packs and every other EPL pack) open exactly as before.
+[/list][/size]
+
+[center][img]https://raw.githubusercontent.com/d3Ex22/TCGCardShopSimulator-Mods/main/EPLVariableBoosterSize/NexusMods/main_1920x1080.jpg[/img][/center]
+
+[size=3][color=#E9DCB5][b]On its own, this mod adds no card to any pack:[/b][/color] bigger packs need more than 7 slots, given by a card set mod or by you in a small file (see below).[/size]
+
+[line]
+
+[size=5][b][color=#E0B13A]Giving a pack more cards[/color][/b][/size]
+
+[size=4][b][color=#E9DCB5]🎴 In a card set mod (set authors)[/color][/b][/size]
+[size=3]Write the extra slots in the pack's [b]SlotWeights[/b], in the set's EPL JSON:
+[code]"SlotWeights": {
+  "Slot1-7":  { "Common": 100 },
+  "Slot8-10": { "Uncommon": 100 },
+  "Slot11":   { "Rare": 70, "Holo Rare": 30 }
+}[/code]
+Keys: [i]SlotN[/i], ranges [i]SlotA-B[/i] or lists [i]Slot1, Slot2[/i]. Rarity names are the set's own. Without this mod, EPL refuses a pack with slots it does not know: list it as a requirement of your set.[/size]
+
+[size=4][b][color=#E9DCB5]📝 For a pack of another mod (players, patches)[/color][/b][/size]
+[size=3]Add a file named [b]anything.packslots.json[/b] anywhere under [i]BepInEx/plugins[/i]. Each entry is the pack's [b]ItemType[/b] (from its set's EPL JSON) and its slots:
+[code]{
+  "sviPack": {
+    "SlotWeights": {
+      "Slot1-4": { "Common ": 100 },
+      "Slot5-7": { "Uncommon ": 100 },
+      "Slot8":   { "Common Reverse Holofoil": 49.3, "Uncommon Reverse Holofoil": 28.2, "Rare Reverse Holofoil": 9.9 },
+      "Slot9":   { "Common Reverse Holofoil": 49.3, "Illustration Rare": 5.6, "Special Illustration Rare": 2.2, "Hyper Rare": 1.9 },
+      "Slot10":  { "Rare Holofoil": 79.7, "Double Rare": 13.8, "Ultra Rare": 6.6 }
+    }
+  }
+}[/code]
+[list]
+[*]Weights are relative chances inside a slot.
+[*][i]"CanHaveDuplicates": true[/i] next to SlotWeights allows the same card twice in a pack.
+[*]A file entry wins over the slots of the set's own JSON. Keys starting with _ are comments.
+[*]Read when the game starts; the BepInEx log lists every pack changed and why one was skipped.
+[/list][/size]
+
+[line]
+
+[size=5][b][color=#E0B13A]Settings[/color][/b][/size]
+
+[size=3][i]BepInEx/config/gab.tcgshop.eplvariableboostersize.cfg[/i], also in game with the Configuration Manager:
+[list]
+[*][b]CardScale[/b] (0.75): size of the cards on the final screen of a big pack. Smaller on its own if the rows do not fit the screen.
+[*][b]RowSpacing[/b] (0.73): distance between the middles of the two rows, in card heights.
+[/list][/size]
+
+[line]
+
+[size=5][b][color=#E0B13A]Limits[/color][/b][/size]
+
+[size=3][list]
+[*][b]God packs[/b] keep EPL's own generation (7 cards).
+[*]More cards per pack is more value per pack: the pack's price is still the one set by its mod.
+[*]The auto pack opener uses EPL's generation, so it gets all the cards too.
+[/list][/size]
+
+[line]
+
+[size=5][b][color=#E0B13A]Installation[/color][/b][/size]
+
+[size=3][list=1]
+[*]Install [b]BepInEx 5.4.23[/b] and [b]Enhanced Prefab Loader[/b] (version 6.8.0).
+[*]Put [i]EPLVariableBoosterSize.dll[/i] in [i]BepInEx/plugins/EPLVariableBoosterSize/[/i].
+[/list][/size]
+
+[line]
+
+[size=2][color=#9A9A9A][b]AI-made.[/b] This mod was written by an AI (Claude). I'm a developer, but I did not review its code: I made it simply to be able to play and enjoy the game. It is shared as is; use it at your own risk.[/color][/size]
