@@ -1,30 +1,31 @@
 [center][img]https://raw.githubusercontent.com/d3Ex22/TCGCardShopSimulator-Mods/main/EPLVariableBoosterSize/NexusMods/header_1400x400.jpg[/img]
 
-[size=5][b][color=#E0B13A]Boosters of more than 7 cards for Enhanced Prefab Loader card sets.[/color][/b][/size]
-[size=3][color=#C9C9C9]Pack custom boosters like the real ones (11 cards, 10 cards...) with a rarity table per slot, and open them in the game as usual.[/color][/size]
+[size=5][b][color=#E0B13A]Boosters of any size for Enhanced Prefab Loader card sets.[/color][/b][/size]
+[size=3][color=#C9C9C9]Pack custom boosters like the real ones (11 cards, 10 cards, 4 cards...) with a rarity table per slot, and open them in the game as usual.[/color][/size]
 
-[url=https://github.com/d3Ex22/TCGCardShopSimulator-Mods/tree/main/EPLVariableBoosterSize][img]https://img.shields.io/badge/source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white[/img][/url] [img]https://img.shields.io/badge/version-0.1.0-B3402E?style=for-the-badge[/img] [img]https://img.shields.io/badge/BepInEx-5.4.23-3E7B3A?style=for-the-badge[/img] [img]https://img.shields.io/badge/AI--made-Claude-E0B13A?style=for-the-badge[/img][/center]
+[url=https://github.com/d3Ex22/TCGCardShopSimulator-Mods/tree/main/EPLVariableBoosterSize][img]https://img.shields.io/badge/source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white[/img][/url] [img]https://img.shields.io/badge/version-1.0.0-B3402E?style=for-the-badge[/img] [img]https://img.shields.io/badge/BepInEx-5.4.23-3E7B3A?style=for-the-badge[/img] [img]https://img.shields.io/badge/AI--made-Claude-E0B13A?style=for-the-badge[/img][/center]
 
 [line]
 
 [size=5][b][color=#E0B13A]Description[/color][/b][/size]
 
-[size=3][b]Enhanced Prefab Loader[/b] (EPL) builds a card pack from slots, [b]Slot1 to Slot7[/b], each with the chances of every rarity. Seven is its limit, and the game's pack opening is made for 7 cards too. This extension lifts both limits, only for the packs that ask for it:
+[size=3][b]Enhanced Prefab Loader[/b] (EPL) builds a card pack from slots, [b]Slot1 to Slot7[/b], each with the chances of every rarity. Seven is its limit, and the game's pack opening is made for exactly 7 cards. This extension lifts both limits, only for the packs that ask for it:
 
 [list]
-[*][b]Any number of slots[/b]: Slot8, Slot9 and so on, or ranges such as Slot1-5. One card per slot, drawn with the slot's rarity chances, like EPL's own packs.
-[*][b]Every card shows up when you open the pack[/b]: the game's card by card reveal goes on to the last card.
-[*][b]Final screen on two rows[/b], fitted to your screen (any resolution, 16:9, 16:10, 21:9...).
-[*][b]Other packs are untouched[/b]: packs of 7 cards or fewer (vanilla packs and every other EPL pack) open exactly as before.
+[*][b]Any number of slots[/b]: Slot8, Slot9 and so on, ranges such as Slot1-5, or fewer than 7. One card per slot, drawn with the slot's rarity chances, like EPL's own packs.
+[*][b]The opening follows the pack[/b]: the game's card by card reveal ends on the pack's last card.
+[*][b]Final screen[/b]: two rows fitted to your screen for more than 7 cards (any resolution, 16:9, 16:10, 21:9...), one row spread across the screen for fewer.
+[*][b]Other packs are untouched[/b]: the game's packs and every other EPL pack open exactly as before.
+[*][b]MyCurio Pokémon sets[/b]: the [b]MyCurio Suite[/b] (separate download) gives every MyCurio booster its real size and real pull rates.
 [/list][/size]
 
 [center][img]https://raw.githubusercontent.com/d3Ex22/TCGCardShopSimulator-Mods/main/EPLVariableBoosterSize/NexusMods/main_1920x1080.jpg[/img][/center]
 
-[size=3][color=#E9DCB5][b]On its own, this mod adds no card to any pack:[/b][/color] bigger packs need more than 7 slots, given by a card set mod or by you in a small file (see below).[/size]
+[size=3][color=#E9DCB5][b]On its own, this mod changes no pack:[/b][/color] a pack gets another size from a card set mod, from a pack file such as the MyCurio Suite, or from your own small file (see below).[/size]
 
 [line]
 
-[size=5][b][color=#E0B13A]Giving a pack more cards[/color][/b][/size]
+[size=5][b][color=#E0B13A]Giving a pack another size[/color][/b][/size]
 
 [size=4][b][color=#E9DCB5]🎴 In a card set mod (set authors)[/color][/b][/size]
 [size=3]Write the extra slots in the pack's [b]SlotWeights[/b], in the set's EPL JSON:
@@ -70,7 +71,7 @@ Keys: [i]SlotN[/i], ranges [i]SlotA-B[/i] or lists [i]Slot1, Slot2[/i]. Rarity n
 [size=5][b][color=#E0B13A]Limits[/color][/b][/size]
 
 [size=3][list]
-[*][b]God packs[/b] keep EPL's own generation (7 cards).
+[*][b]God packs[/b] keep EPL's own generation (7 cards); the opening follows them.
 [*]More cards per pack is more value per pack: the pack's price is still the one set by its mod.
 [*]The auto pack opener uses EPL's generation, so it gets all the cards too.
 [/list][/size]
