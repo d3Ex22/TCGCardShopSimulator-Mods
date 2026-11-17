@@ -27,6 +27,7 @@ game's pack opening is made for exactly 7 cards. This mod lifts both limits, for
   - fewer than 7 cards: **one row**, spread between the two ends of the game's own row.
 - **Only those packs change**: the game's packs and every other EPL pack open exactly as before.
 - The card sets' own card backs, foils and holo effects are kept: EPL still makes every card.
+- **God packs** (EPL's rare packs drawn from the set's god pack weights) get the pack's size too.
 - The auto pack opener goes through EPL's pack generation, so it gets all the cards of the pack too.
 
 **On its own, this mod changes no pack.** A pack gets another size from a card set mod, from a pack file such as the
@@ -57,32 +58,40 @@ The set then requires EPL Variable Booster Size.
 Keep the set's EPL JSON at 7 slots and ship a `<anything>.packslots.json` file anywhere under `BepInEx/plugins`.
 Without EPL Variable Booster Size the file is ignored and the packs stay at 7 cards.
 
-Each entry is a pack's `ItemType` and its slots:
+Each entry is a pack's `ItemType`:
 
-```json
+```jsonc
 {
-  "_doc": "Scarlet & Violet booster of the MyCurio sets as 10 cards.",
-  "sviPack": {
-    "SlotWeights": {
+  "_doc": "Keys starting with _ are comments.",
+  "sviPack": {                          // the pack's ItemType, from its set's EPL JSON
+    "SlotWeights": {                    // required: one card per slot
       "Slot1-4": { "Common ": 100 },
       "Slot5-7": { "Uncommon ": 100 },
       "Slot8":   { "Common Reverse Holofoil": 49.3, "Uncommon Reverse Holofoil": 28.2, "Rare Reverse Holofoil": 9.9 },
       "Slot9":   { "Common Reverse Holofoil": 49.3, "Illustration Rare": 5.6, "Special Illustration Rare": 2.2, "Hyper Rare": 1.9 },
       "Slot10":  { "Rare Holofoil": 79.7, "Double Rare": 13.8, "Ultra Rare": 6.6 }
+    },
+    "CanHaveDuplicates": false,         // optional: the same card twice in a pack (default: the pack's own setting)
+    "PriceMultiplier": 1.4,             // optional: price of the pack and of its boxes, existing saves too (default: 1)
+    "CanHaveGodPacks": true,            // optional: god packs on or off (default: the pack's own setting)
+    "GodPackPercentage": 0.0002,        // optional: chance of a god pack (default: the pack's own)
+    "GodWeights": {                     // optional: god pack rarities, every card drawn here (default: the set's own)
+      "Special Illustration Rare": 70,
+      "★_Special Illustration Rare": 30
     }
   }
 }
 ```
 
-- `"CanHaveDuplicates": true` next to `SlotWeights` allows the same card twice in a pack (default: the pack's own
-  setting).
-- A pack file wins over the slots written in the set's own JSON. Keys starting with `_` are comments.
+- Slot keys: `SlotN`, ranges `SlotA-B`, or lists `Slot1, Slot2`. Rarity names are the set's own (as in its
+  `Rarities` list). Weights are relative chances (they do not need to add up to 100).
+- A god pack has as many cards as the pack, all drawn from `GodWeights`.
+- A pack file wins over the set's own JSON. Comments (`//`) are allowed.
 - The files are read when the game starts. The log (`BepInEx/LogOutput.log`) lists every pack it changed, and says
   why when it skips one (pack not installed, unknown rarity, missing slot).
 
 ## Limits
 
-- **God packs** keep EPL's own generation (7 cards); the opening follows them.
 - More cards per pack is more value per pack: the pack's price is still the one set by its mod.
 
 ## Installation

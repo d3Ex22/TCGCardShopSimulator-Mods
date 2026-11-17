@@ -19,7 +19,7 @@ namespace VariableBoosterSize
     {
         public const string Guid = "gab.tcgshop.eplvariableboostersize";
         public const string Name = "EPL Variable Booster Size";
-        public const string Version = "1.0.0";
+        public const string Version = "1.1.0";
 
         internal static ManualLogSource Log;
         internal static Harmony Harmony;
@@ -38,6 +38,7 @@ namespace VariableBoosterSize
             PackDefs.LoadFiles();
             PackDefs.PatchValidator();   // before EPL reads its bundles (it starts once the game manager starts)
             Opening.Apply();
+            Prices.Apply();
             if (Epl.IsAvailable) Epl.Api.Events.OnBundleLoadingComplete += Generators.Register;
             else Log.LogError("EPL API not available: packs keep their EPL size.");
             Log.LogInfo($"{Name} {Version} loaded.");

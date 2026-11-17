@@ -16,6 +16,10 @@ namespace VariableBoosterSize
         public string ItemType;
         public string Source;
         public bool? Duplicates;
+        public float? PriceMultiplier;
+        public bool? GodPacks;                         // "CanHaveGodPacks"
+        public float? GodChance;                       // "GodPackPercentage"
+        public Dictionary<string, float> GodWeights;   // "GodWeights"
         public List<Dictionary<string, float>> Slots = new List<Dictionary<string, float>>();
     }
 
@@ -106,7 +110,9 @@ namespace VariableBoosterSize
                                         w.Properties().ToDictionary(r => r.Name, r => (float)r.Value, StringComparer.Ordinal)));
                         var slots = Ordered(weights, $"{name}: {p.Name}");
                         if (slots == null) continue;
-                        var def = new PackDef { ItemType = p.Name, Source = name, Slots = slots, Duplicates = (bool?)o["CanHaveDuplicates"] };
+                        var def = new PackDef { ItemType = p.Name, Source = name, Slots = slots, Duplicates = (bool?)o["CanHaveDuplicates"], PriceMultiplier = (float?)o["PriceMultiplier"],
+                            GodPacks = (bool?)o["CanHaveGodPacks"], GodChance = (float?)o["GodPackPercentage"],
+                            GodWeights = (o["GodWeights"] as JObject)?.Properties().ToDictionary(r => r.Name, r => (float)r.Value, StringComparer.Ordinal) };
                         if (ByItemType.TryGetValue(p.Name, out var old)) Plugin.Log.LogWarning($"{p.Name}: {name} replaces the slots from {old.Source}");
                         ByItemType[p.Name] = def;
                         n++;
