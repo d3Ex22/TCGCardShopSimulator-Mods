@@ -36,7 +36,7 @@ MyCurio Suite, or from your own small file (see below).
 
 ### 1. In the set's EPL JSON
 
-Write the slots in the pack's `SlotWeights`, in the set's EPL JSON, as many as the pack needs:
+Write the slots in the pack's `SlotWeights`:
 
 ```json
 "SlotWeights": {
@@ -50,16 +50,14 @@ Write the slots in the pack's `SlotWeights`, in the set's EPL JSON, as many as t
   `Rarities` list).
 - Weights are relative chances inside a slot (they do not need to add up to 100).
 
-The set then needs EPL Variable Booster Size: EPL refuses a pack with slots it does not know.
+The set then requires EPL Variable Booster Size.
 
-### 2. In a pack file, for compatibility (mod authors)
+### 2. In a pack file, for compatibility
 
-To keep a set working in mod lists without EPL Variable Booster Size, leave its EPL JSON at 7 slots and ship a file
-named `<anything>.packslots.json` with it (anywhere under `BepInEx/plugins`). Without EPL Variable Booster Size the
-file is ignored and the packs open as 7 card packs; with it, they get the file's slots. A pack file can also give the
-packs of another mod their size, as the MyCurio Suite does for the MyCurio sets.
+Keep the set's EPL JSON at 7 slots and ship a `<anything>.packslots.json` file anywhere under `BepInEx/plugins`.
+Without EPL Variable Booster Size the file is ignored and the packs stay at 7 cards.
 
-Each entry is the pack's `ItemType` (as written in its set's EPL JSON) and its slots, written as in the EPL JSON:
+Each entry is a pack's `ItemType` and its slots:
 
 ```json
 {
