@@ -90,10 +90,6 @@ Each entry is a pack's `ItemType`:
 - The files are read when the game starts. The log (`BepInEx/LogOutput.log`) lists every pack it changed, and says
   why when it skips one (pack not installed, unknown rarity, missing slot).
 
-## Limits
-
-- More cards per pack is more value per pack: the pack's price is still the one set by its mod.
-
 ## Installation
 
 1. Install [BepInEx 5.4.23](https://github.com/BepInEx/BepInEx/releases) and Enhanced Prefab Loader (version 6.8.0).
@@ -126,3 +122,24 @@ If the game is not in `D:\Games\TCG Card Shop Simulator`, add `-p:GameDir="C:\pa
 8 or newer. `-p:Deploy=true` copies the DLL and its symbols to `BepInEx/scripts/EPLVariableBoosterSize/` for
 [ScriptEngine](https://github.com/BepInEx/BepInEx.Debug) hot reload (the mod removes its patches when unloaded). Packs
 written in a set's own EPL JSON are only read at game start: test those with a full restart.
+
+## Changelog
+
+### 1.1.0
+
+- God packs now have the pack's size (10 or 11 cards instead of EPL's 7), drawn from the set's god pack weights.
+- New optional pack file field "CanHaveGodPacks": turns a pack's god packs on or off.
+- New optional pack file field "GodPackPercentage": chance of a god pack.
+- New optional pack file field "GodWeights": god pack rarities and weights.
+- New optional pack file field "PriceMultiplier": multiplies the price of a pack and of its boxes (purchase and market price, existing saves too).
+- Comments (//) are allowed in pack files.
+
+### 1.0.0
+
+- Packs smaller than 7 cards, shown on one row spread across the screen.
+- The opening follows god packs (7 cards).
+- The final screen is laid out from the game's own places, even when MyCurio Products moved them.
+
+### 0.1.0
+
+- First release: packs of more than 7 cards, final screen on two rows fitted to the screen.

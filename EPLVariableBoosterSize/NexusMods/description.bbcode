@@ -84,19 +84,35 @@ Each entry is a pack's [b]ItemType[/b]:
 
 [line]
 
-[size=5][b][color=#E0B13A]Limits[/color][/b][/size]
-
-[size=3][list]
-[*]More cards per pack is more value per pack: the pack's price is still the one set by its mod.
-[/list][/size]
-
-[line]
-
 [size=5][b][color=#E0B13A]Installation[/color][/b][/size]
 
 [size=3][list=1]
 [*]Install [b]BepInEx 5.4.23[/b] and [b]Enhanced Prefab Loader[/b] (version 6.8.0).
 [*]Put [i]EPLVariableBoosterSize.dll[/i] in [i]BepInEx/plugins/EPLVariableBoosterSize/[/i].
+[/list][/size]
+
+[line]
+
+[size=5][b][color=#E0B13A]Changelog[/color][/b][/size]
+
+[size=3][b]1.1.0[/b]
+[list]
+[*]God packs now have the pack's size (10 or 11 cards instead of EPL's 7), drawn from the set's god pack weights.
+[*]New optional pack file field "CanHaveGodPacks": turns a pack's god packs on or off.
+[*]New optional pack file field "GodPackPercentage": chance of a god pack.
+[*]New optional pack file field "GodWeights": god pack rarities and weights.
+[*]New optional pack file field "PriceMultiplier": multiplies the price of a pack and of its boxes (purchase and market price, existing saves too).
+[*]Comments (//) are allowed in pack files.
+[/list]
+[b]1.0.0[/b]
+[list]
+[*]Packs smaller than 7 cards, shown on one row spread across the screen.
+[*]The opening follows god packs (7 cards).
+[*]The final screen is laid out from the game's own places, even when MyCurio Products moved them.
+[/list]
+[b]0.1.0[/b]
+[list]
+[*]First release: packs of more than 7 cards, final screen on two rows fitted to the screen.
 [/list][/size]
 
 [line]
