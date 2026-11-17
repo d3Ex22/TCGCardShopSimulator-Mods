@@ -123,11 +123,17 @@ namespace VariableBoosterSize
                 var gen = new SlotPackGenerator(def.ItemType, slots, def.Duplicates ?? config.CanHaveDuplicates, original);
                 service.SetPackGenerator(type, gen);
                 Active[type] = gen;
-                if (config.CanHaveGodPacks)
-                    Plugin.Log.LogInfo($"{def.ItemType}: its god packs stay EPL's own (7 cards)");
+                if (def.GodPacks.HasValue || def.GodChance.HasValue)
+                {
+                    if (!GodConfigOriginals.ContainsKey(type)) GodConfigOriginals[type] = (config.CanHaveGodPacks, config.GodPackPercentage);
+                    service.SetGodPack(type, def.GodPacks ?? config.CanHaveGodPacks, def.GodChance ?? config.GodPackPercentage);
+                }
+                if (def.GodPacks ?? config.CanHaveGodPacks) GodPacks(def.ItemType, type, slots.Count, Rarities(def.GodWeights, def.ItemType));
+                if (def.PriceMultiplier is float pm && pm > 0f && Math.Abs(pm - 1f) > 0.0001f) Prices.Set(type, pm, def.ItemType);
                 done++;
             }
             Plugin.Log.LogInfo($"{done} pack(s) with their own slots: " + string.Join(", ", Active.Select(kv => $"{kv.Key} ({kv.Value.Size})")));
+            if (GodOriginals.Count > 0) Plugin.Log.LogInfo($"{GodOriginals.Count} of them get god packs of their own size: " + string.Join(", ", GodOriginals.Keys));
         }
 
         private static EnhancedPrefabLoader.API.Models.PackConfigData SafeConfig(EnhancedPrefabLoader.API.Assets.IItemLibrary items, EItemType type)
@@ -135,29 +141,102 @@ namespace VariableBoosterSize
             try { return items.GetPackConfig(type); } catch { return null; }
         }
 
-        // EPL keeps the generator in its internal generation data; read it to put it back when we are unloaded.
-        private static IPackGenerator CurrentGenerator(EItemType type)
+        // EPL keeps the generators in its internal generation data (one per pack): read to put them back when we are
+        // unloaded, and for god packs (the API only sets the normal one) written there too.
+        private static string _dataError;
+
+        private static object GenerationData(EItemType type)
         {
+            _dataError = null;
             try
             {
                 var runtime = AccessTools.TypeByName("EnhancedPrefabLoader.Core.EplRuntimeData");
-                var lookup = Traverse.Create(runtime).Property("Assets").Property("LookupLibrary").Property("GenerationDataLookup").GetValue();
-                if (lookup is System.Collections.IDictionary d && d.Contains(type))
-                    return Traverse.Create(d[type]).Property("PackGenerator").GetValue() as IPackGenerator;
+                if (runtime == null) { _dataError = "EplRuntimeData not found"; return null; }
+                var assets = AccessTools.Property(runtime, "Assets")?.GetValue(null);
+                var library = assets == null ? null : AccessTools.Property(assets.GetType(), "LookupLibrary")?.GetValue(assets);
+                var lookup = library == null ? null : AccessTools.Property(library.GetType(), "GenerationDataLookup")?.GetValue(library);
+                if (!(lookup is System.Collections.IDictionary d)) { _dataError = "generation data not found"; return null; }
+                if (!d.Contains(type)) { _dataError = "no generation data for the pack"; return null; }
+                return d[type];
             }
-            catch { }
-            return null;
+            catch (Exception e) { _dataError = e.Message; return null; }
+        }
+
+        private static System.Reflection.PropertyInfo GeneratorProperty(object data, string name) =>
+            data == null ? null : AccessTools.Property(data.GetType(), name);
+
+        private static IPackGenerator CurrentGenerator(EItemType type)
+        {
+            var data = GenerationData(type);
+            return GeneratorProperty(data, "PackGenerator")?.GetValue(data) as IPackGenerator;
+        }
+
+        /// <summary>A pack file's rarity weights (names as in the set), as EPL's rarities; null when none given.</summary>
+        private static Dictionary<ERarity, float> Rarities(Dictionary<string, float> names, string id)
+        {
+            if (names == null) return null;
+            var w = new Dictionary<ERarity, float>();
+            foreach (var kv in names)
+            {
+                if (Enum.TryParse(EnhancedPrefabLoader.API.Extensions.StringExtensions.Sanitize(kv.Key), out ERarity r)) w[r] = kv.Value;
+                else Plugin.Log.LogWarning($"{id}: unknown god pack rarity ignored: '{kv.Key}'");
+            }
+            return w;
+        }
+
+        /// <summary>God pack settings of EPL changed by a pack file, put back when we are unloaded.</summary>
+        private static readonly Dictionary<EItemType, (bool on, float chance)> GodConfigOriginals = new Dictionary<EItemType, (bool, float)>();
+
+        /// <summary>Original god pack generators, by pack.</summary>
+        private static readonly Dictionary<EItemType, IPackGenerator> GodOriginals = new Dictionary<EItemType, IPackGenerator>();
+
+        /// <summary>
+        /// A god pack of the pack's size: every slot drawn from the set's god pack weights, duplicates allowed, as EPL's own
+        /// god packs (which always have 7 cards).
+        /// </summary>
+        private static void GodPacks(string id, EItemType type, int size, Dictionary<ERarity, float> own)
+        {
+            try
+            {
+                IReadOnlyDictionary<ERarity, float> weights = own != null && own.Count > 0 ? own : Epl.Api.Assets.Items.GetPackWeights(type)?.GodWeights;
+                var data = GenerationData(type);
+                var god = GeneratorProperty(data, "GodPackGenerator");
+                string why = weights == null || weights.Count == 0 ? "no god pack weights" : data == null ? _dataError : god == null || !god.CanWrite ? "god pack generator not found" : null;
+                if (why != null)
+                {
+                    Plugin.Log.LogWarning($"{id}: its god packs stay EPL's own (7 cards): {why}");
+                    return;
+                }
+                if (!GodOriginals.ContainsKey(type)) GodOriginals[type] = god.GetValue(data) as IPackGenerator;
+                var slot = weights.ToDictionary(kv => kv.Key, kv => kv.Value);
+                var slots = Enumerable.Range(0, size).Select(_ => new Dictionary<ERarity, float>(slot)).ToList();
+                god.SetValue(data, new SlotPackGenerator(id + " (god pack)", slots, true, null));
+            }
+            catch (Exception e) { Plugin.Log.LogWarning($"{id}: god packs stay EPL's own (7 cards): {e.Message}"); }
         }
 
         internal static void Restore()
         {
-            if (Active.Count == 0 || !Epl.IsAvailable) { Active.Clear(); return; }
+            Prices.Factor.Clear();
+            if (!Epl.IsAvailable) { Active.Clear(); GodOriginals.Clear(); GodConfigOriginals.Clear(); return; }
             foreach (var kv in Active)
             {
                 try { if (kv.Value.Original != null) Epl.Api.Services.ItemService.SetPackGenerator(kv.Key, kv.Value.Original); }
                 catch { }
             }
+            foreach (var kv in GodConfigOriginals)
+            {
+                try { Epl.Api.Services.ItemService.SetGodPack(kv.Key, kv.Value.on, kv.Value.chance); }
+                catch { }
+            }
+            GodConfigOriginals.Clear();
+            foreach (var kv in GodOriginals)
+            {
+                try { var data = GenerationData(kv.Key); GeneratorProperty(data, "GodPackGenerator")?.SetValue(data, kv.Value); }
+                catch { }
+            }
             Active.Clear();
+            GodOriginals.Clear();
         }
     }
 }

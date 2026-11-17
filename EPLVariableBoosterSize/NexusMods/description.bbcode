@@ -3,7 +3,7 @@
 [size=5][b][color=#E0B13A]Boosters of any size for Enhanced Prefab Loader card sets.[/color][/b][/size]
 [size=3][color=#C9C9C9]Pack custom boosters like the real ones (11 cards, 10 cards, 4 cards...) with a rarity table per slot, and open them in the game as usual.[/color][/size]
 
-[url=https://github.com/d3Ex22/TCGCardShopSimulator-Mods/tree/main/EPLVariableBoosterSize][img]https://img.shields.io/badge/source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white[/img][/url] [img]https://img.shields.io/badge/version-1.0.0-B3402E?style=for-the-badge[/img] [img]https://img.shields.io/badge/BepInEx-5.4.23-3E7B3A?style=for-the-badge[/img] [img]https://img.shields.io/badge/AI--made-Claude-E0B13A?style=for-the-badge[/img][/center]
+[url=https://github.com/d3Ex22/TCGCardShopSimulator-Mods/tree/main/EPLVariableBoosterSize][img]https://img.shields.io/badge/source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white[/img][/url] [img]https://img.shields.io/badge/version-1.1.0-B3402E?style=for-the-badge[/img] [img]https://img.shields.io/badge/BepInEx-5.4.23-3E7B3A?style=for-the-badge[/img] [img]https://img.shields.io/badge/AI--made-Claude-E0B13A?style=for-the-badge[/img][/center]
 
 [line]
 
@@ -16,6 +16,7 @@
 [*][b]The opening follows the pack[/b]: the game's card by card reveal ends on the pack's last card.
 [*][b]Final screen[/b]: two rows fitted to your screen for more than 7 cards (any resolution, 16:9, 16:10, 21:9...), one row spread across the screen for fewer.
 [*][b]Other packs are untouched[/b]: the game's packs and every other EPL pack open exactly as before.
+[*][b]God packs[/b] get the pack's size too.
 [*][b]MyCurio Pokémon sets[/b]: the [b]MyCurio Suite[/b] (separate download) gives every MyCurio booster its real size and real pull rates.
 [/list][/size]
 
@@ -43,21 +44,31 @@ The set then requires EPL Variable Booster Size.[/size]
 [size=4][b][color=#E9DCB5]📝 2. In a pack file, for compatibility[/color][/b][/size]
 [size=3]Keep the set's EPL JSON at 7 slots and ship a [b]anything.packslots.json[/b] file anywhere under [i]BepInEx/plugins[/i]. Without EPL Variable Booster Size the file is ignored and the packs stay at 7 cards.
 
-Each entry is a pack's [b]ItemType[/b] and its slots:
+Each entry is a pack's [b]ItemType[/b]:
 [code]{
-  "sviPack": {
-    "SlotWeights": {
+  "_doc": "Keys starting with _ are comments.",
+  "sviPack": {                          // the pack's ItemType, from its set's EPL JSON
+    "SlotWeights": {                    // required: one card per slot
       "Slot1-4": { "Common ": 100 },
       "Slot5-7": { "Uncommon ": 100 },
       "Slot8":   { "Common Reverse Holofoil": 49.3, "Uncommon Reverse Holofoil": 28.2, "Rare Reverse Holofoil": 9.9 },
       "Slot9":   { "Common Reverse Holofoil": 49.3, "Illustration Rare": 5.6, "Special Illustration Rare": 2.2, "Hyper Rare": 1.9 },
       "Slot10":  { "Rare Holofoil": 79.7, "Double Rare": 13.8, "Ultra Rare": 6.6 }
+    },
+    "CanHaveDuplicates": false,         // optional: the same card twice in a pack (default: the pack's own setting)
+    "PriceMultiplier": 1.4,             // optional: price of the pack and of its boxes, existing saves too (default: 1)
+    "CanHaveGodPacks": true,            // optional: god packs on or off (default: the pack's own setting)
+    "GodPackPercentage": 0.0002,        // optional: chance of a god pack (default: the pack's own)
+    "GodWeights": {                     // optional: god pack rarities, every card drawn here (default: the set's own)
+      "Special Illustration Rare": 70,
+      "★_Special Illustration Rare": 30
     }
   }
 }[/code]
 [list]
-[*][i]"CanHaveDuplicates": true[/i] next to SlotWeights allows the same card twice in a pack.
-[*]A pack file wins over the slots of the set's own JSON. Keys starting with _ are comments.
+[*]Slot keys: [i]SlotN[/i], ranges [i]SlotA-B[/i] or lists [i]Slot1, Slot2[/i]. Rarity names are the set's own. Weights are relative chances.
+[*]A god pack has as many cards as the pack, all drawn from GodWeights.
+[*]A pack file wins over the set's own JSON. Comments (//) are allowed.
 [*]Read when the game starts; the BepInEx log lists every pack changed and why one was skipped.
 [/list][/size]
 
@@ -76,7 +87,6 @@ Each entry is a pack's [b]ItemType[/b] and its slots:
 [size=5][b][color=#E0B13A]Limits[/color][/b][/size]
 
 [size=3][list]
-[*][b]God packs[/b] keep EPL's own generation (7 cards); the opening follows them.
 [*]More cards per pack is more value per pack: the pack's price is still the one set by its mod.
 [/list][/size]
 
