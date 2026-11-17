@@ -28,7 +28,7 @@
 [size=5][b][color=#E0B13A]Giving a pack another size[/color][/b][/size]
 
 [size=4][b][color=#E9DCB5]🎴 1. In the set's EPL JSON[/color][/b][/size]
-[size=3]Write the slots in the pack's [b]SlotWeights[/b], in the set's EPL JSON, as many as the pack needs:
+[size=3]Write the slots in the pack's [b]SlotWeights[/b]:
 [code]"SlotWeights": {
   "Slot1-7":  { "Common": 100 },
   "Slot8-10": { "Uncommon": 100 },
@@ -38,12 +38,12 @@
 [*]Slot keys: [i]SlotN[/i], ranges [i]SlotA-B[/i] or lists [i]Slot1, Slot2[/i]. Rarity names are the set's own.
 [*]Weights are relative chances inside a slot.
 [/list]
-The set then needs EPL Variable Booster Size: EPL refuses a pack with slots it does not know.[/size]
+The set then requires EPL Variable Booster Size.[/size]
 
-[size=4][b][color=#E9DCB5]📝 2. In a pack file, for compatibility (mod authors)[/color][/b][/size]
-[size=3]To keep a set working in mod lists without EPL Variable Booster Size, leave its EPL JSON at 7 slots and ship a file named [b]anything.packslots.json[/b] with it (anywhere under [i]BepInEx/plugins[/i]). Without EPL Variable Booster Size the file is ignored and the packs open as 7 card packs; with it, they get the file's slots. A pack file can also give the packs of another mod their size, as the MyCurio Suite does for the MyCurio sets.
+[size=4][b][color=#E9DCB5]📝 2. In a pack file, for compatibility[/color][/b][/size]
+[size=3]Keep the set's EPL JSON at 7 slots and ship a [b]anything.packslots.json[/b] file anywhere under [i]BepInEx/plugins[/i]. Without EPL Variable Booster Size the file is ignored and the packs stay at 7 cards.
 
-Each entry is the pack's [b]ItemType[/b] (from its set's EPL JSON) and its slots, written as in the EPL JSON:
+Each entry is a pack's [b]ItemType[/b] and its slots:
 [code]{
   "sviPack": {
     "SlotWeights": {
