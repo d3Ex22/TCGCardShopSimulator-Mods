@@ -34,26 +34,18 @@ MyCurio Suite, or from your own small file (see below).
 
 ## Giving a pack another size
 
-### In a card set mod (for set authors)
+### A pack file (the intended way)
 
-Write the extra slots in the pack's `SlotWeights`, in the EPL JSON of the set:
+A file named `<anything>.packslots.json`, anywhere under `BepInEx/plugins`, gives packs their slots. It sits next to the
+set's EPL JSON and does not change it:
 
-```json
-"SlotWeights": {
-  "Slot1-7":  { "Common": 100 },
-  "Slot8-10": { "Uncommon": 100 },
-  "Slot11":   { "Rare": 70, "Holo Rare": 30 }
-}
-```
+- **Set authors**: ship this file with your set and keep your EPL JSON as it is (7 slots). Without EPL Variable
+  Booster Size, the file is ignored and your packs open as 7 card packs; with it, they get their real size. Your set
+  works in every mod list, with or without this mod.
+- **Players and patches**: change the packs of a set you did not make, without editing its files (as the MyCurio Suite
+  does for the MyCurio sets).
 
-Keys: `SlotN`, ranges `SlotA-B`, or lists `Slot1, Slot2`. Rarity names are the set's own (as in its `Rarities` list).
-Without this mod installed, EPL refuses a pack with slots it does not know: tell your players this mod is needed.
-
-### For a pack of another mod (players, patches)
-
-To change a pack without editing its mod, add a file named `<anything>.packslots.json` anywhere under
-`BepInEx/plugins` (for example `BepInEx/plugins/EPLVariableBoosterSize/my-packs.packslots.json`). Each entry is the
-pack's `ItemType` (as written in its set's EPL JSON) and its slots:
+Each entry is the pack's `ItemType` (as written in its set's EPL JSON) and its slots:
 
 ```json
 {
@@ -70,12 +62,29 @@ pack's `ItemType` (as written in its set's EPL JSON) and its slots:
 }
 ```
 
+- Slot keys: `SlotN`, ranges `SlotA-B`, or lists `Slot1, Slot2`. Rarity names are the set's own (as in its
+  `Rarities` list).
 - Weights are relative chances inside a slot (they do not need to add up to 100).
 - `"CanHaveDuplicates": true` next to `SlotWeights` allows the same card twice in a pack (default: the pack's own
   setting).
-- A file entry wins over the slots written in the set's own JSON. Keys starting with `_` are comments.
+- A pack file wins over the slots written in the set's own JSON. Keys starting with `_` are comments.
 - The files are read when the game starts. The log (`BepInEx/LogOutput.log`) lists every pack it changed, and says
-  why when it skips one (unknown pack, unknown rarity, missing slot).
+  why when it skips one (pack not installed, unknown rarity, missing slot).
+
+### In the set's EPL JSON
+
+The extra slots can also go straight into the pack's `SlotWeights`, in the set's EPL JSON:
+
+```json
+"SlotWeights": {
+  "Slot1-7":  { "Common": 100 },
+  "Slot8-10": { "Uncommon": 100 },
+  "Slot11":   { "Rare": 70, "Holo Rare": 30 }
+}
+```
+
+The set then needs EPL Variable Booster Size: EPL refuses a pack with slots it does not know. To keep the set working
+without it, use a pack file instead.
 
 ## Limits
 
