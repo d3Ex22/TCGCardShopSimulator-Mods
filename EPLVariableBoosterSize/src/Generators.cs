@@ -8,10 +8,7 @@ using UnityEngine;
 
 namespace VariableBoosterSize
 {
-    /// <summary>
-    /// One card per slot, like EPL's "Guaranteed" packs, for any number of slots. Set through EPL's own API
-    /// (ItemService.SetPackGenerator): EPL still makes the cards (foils, ghost cards, its events) from what we pick.
-    /// </summary>
+    /// <summary>One card per slot, like EPL's Guaranteed packs. EPL still turns the picks into cards: foils, ghost cards, events.</summary>
     internal sealed class SlotPackGenerator : IPackGenerator
     {
         private readonly string _id;
@@ -61,12 +58,12 @@ namespace VariableBoosterSize
                     if (pool.Count == 0) byRarity.Remove(pick);
                 }
             }
-            // A slot with none of its rarities left (or in the set): a random card, as EPL does.
+            // A slot with none of its rarities left gets a random card, as in EPL
             while (result.Count < _slots.Count) result.Add(cardPool[UnityEngine.Random.Range(0, cardPool.Count)]);
             if (empty > 0 && !_warned)
             {
                 _warned = true;
-                Plugin.Log.LogWarning($"{_id}: {empty} slot(s) had no card of their rarities left, filled with random cards");
+                Plugin.Log.LogWarning($"{_id}: {Plugin.Count(empty, "slot")} had no card of their rarities left, filled with random cards");
             }
             return result;
         }
@@ -94,13 +91,13 @@ namespace VariableBoosterSize
             {
                 if (!Enum.TryParse(def.ItemType, out EItemType type))
                 {
-                    Plugin.Log.LogInfo($"{def.ItemType} ({def.Source}): pack not installed, skipped");
+                    Plugin.Log.LogInfo($"{def.ItemType} from {def.Source}: pack not installed, skipped");
                     continue;
                 }
                 var config = SafeConfig(items, type);
                 if (config == null)
                 {
-                    Plugin.Log.LogWarning($"{def.ItemType} ({def.Source}): not an EPL card pack; skipped");
+                    Plugin.Log.LogWarning($"{def.ItemType} from {def.Source}: not an EPL card pack, skipped");
                     continue;
                 }
                 var slots = new List<Dictionary<ERarity, float>>();
@@ -110,7 +107,7 @@ namespace VariableBoosterSize
                     var w = new Dictionary<ERarity, float>();
                     foreach (var kv in s)
                     {
-                        // EPL registers rarities under their sanitized name ("Holo Rare Holofoil" -> "HoloRareHolofoil").
+                        // EPL registers rarities under their sanitized name: "Holo Rare Holofoil" becomes "HoloRareHolofoil"
                         if (Enum.TryParse(EnhancedPrefabLoader.API.Extensions.StringExtensions.Sanitize(kv.Key), out ERarity r)) w[r] = kv.Value;
                         else unknown.Add(kv.Key);
                     }
@@ -132,8 +129,8 @@ namespace VariableBoosterSize
                 if (def.PriceMultiplier is float pm && pm > 0f && Math.Abs(pm - 1f) > 0.0001f) Prices.Set(type, pm, def.ItemType);
                 done++;
             }
-            Plugin.Log.LogInfo($"{done} pack(s) with their own slots: " + string.Join(", ", Active.Select(kv => $"{kv.Key} ({kv.Value.Size})")));
-            if (GodOriginals.Count > 0) Plugin.Log.LogInfo($"{GodOriginals.Count} of them get god packs of their own size: " + string.Join(", ", GodOriginals.Keys));
+            Plugin.Log.LogInfo($"{Plugin.Count(done, "pack")} with their own size: " + string.Join(", ", Active.Select(kv => $"{kv.Key} {kv.Value.Size}")));
+            if (GodOriginals.Count > 0) Plugin.Log.LogInfo("God packs of the pack's size: " + string.Join(", ", GodOriginals.Keys));
         }
 
         private static EnhancedPrefabLoader.API.Models.PackConfigData SafeConfig(EnhancedPrefabLoader.API.Assets.IItemLibrary items, EItemType type)
@@ -141,8 +138,8 @@ namespace VariableBoosterSize
             try { return items.GetPackConfig(type); } catch { return null; }
         }
 
-        // EPL keeps the generators in its internal generation data (one per pack): read to put them back when we are
-        // unloaded, and for god packs (the API only sets the normal one) written there too.
+        // EPL keeps its generators in internal data, one entry per pack. The API only sets the normal one: god packs are
+        // set there directly, and the originals are put back when we unload.
         private static string _dataError;
 
         private static object GenerationData(EItemType type)
@@ -171,7 +168,7 @@ namespace VariableBoosterSize
             return GeneratorProperty(data, "PackGenerator")?.GetValue(data) as IPackGenerator;
         }
 
-        /// <summary>A pack file's rarity weights (names as in the set), as EPL's rarities; null when none given.</summary>
+        /// <summary>A pack file's rarity weights as EPL rarities, null when none are given.</summary>
         private static Dictionary<ERarity, float> Rarities(Dictionary<string, float> names, string id)
         {
             if (names == null) return null;
@@ -190,10 +187,7 @@ namespace VariableBoosterSize
         /// <summary>Original god pack generators, by pack.</summary>
         private static readonly Dictionary<EItemType, IPackGenerator> GodOriginals = new Dictionary<EItemType, IPackGenerator>();
 
-        /// <summary>
-        /// A god pack of the pack's size: every slot drawn from the set's god pack weights, duplicates allowed, as EPL's own
-        /// god packs (which always have 7 cards).
-        /// </summary>
+        /// <summary>A god pack of the pack's size, every slot drawn from the god pack weights, duplicates allowed as in EPL.</summary>
         private static void GodPacks(string id, EItemType type, int size, Dictionary<ERarity, float> own)
         {
             try
@@ -204,15 +198,15 @@ namespace VariableBoosterSize
                 string why = weights == null || weights.Count == 0 ? "no god pack weights" : data == null ? _dataError : god == null || !god.CanWrite ? "god pack generator not found" : null;
                 if (why != null)
                 {
-                    Plugin.Log.LogWarning($"{id}: its god packs stay EPL's own (7 cards): {why}");
+                    Plugin.Log.LogWarning($"{id}: god packs keep EPL's 7 cards, {why}");
                     return;
                 }
                 if (!GodOriginals.ContainsKey(type)) GodOriginals[type] = god.GetValue(data) as IPackGenerator;
                 var slot = weights.ToDictionary(kv => kv.Key, kv => kv.Value);
                 var slots = Enumerable.Range(0, size).Select(_ => new Dictionary<ERarity, float>(slot)).ToList();
-                god.SetValue(data, new SlotPackGenerator(id + " (god pack)", slots, true, null));
+                god.SetValue(data, new SlotPackGenerator(id + " god pack", slots, true, null));
             }
-            catch (Exception e) { Plugin.Log.LogWarning($"{id}: god packs stay EPL's own (7 cards): {e.Message}"); }
+            catch (Exception e) { Plugin.Log.LogWarning($"{id}: god packs keep EPL's 7 cards, {e.Message}"); }
         }
 
         internal static void Restore()

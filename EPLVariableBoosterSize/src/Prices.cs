@@ -6,16 +6,14 @@ using UnityEngine;
 namespace VariableBoosterSize
 {
     /// <summary>
-    /// "PriceMultiplier" of a pack entry: the pack's cost and market price, and those of the boxes of that pack, are
-    /// multiplied when the game reads them. The game generates and saves each item's prices once per save; scaling them
-    /// when they are read works on existing saves too, and goes away with the entry.
+    /// PriceMultiplier: the cost and market price of a pack and of its boxes are scaled when the game reads them, so it
+    /// works on existing saves and goes away with the entry.
     /// </summary>
     internal static class Prices
     {
         internal static readonly Dictionary<EItemType, float> Factor = new Dictionary<EItemType, float>();
 
-        // The game reads prices through CPlayerData (a one line wrapper) and RestockManager. The wrapper can be inlined
-        // by the runtime into the screens, so both are patched; a depth counter keeps the factor from applying twice.
+        // CPlayerData wraps RestockManager and can be inlined, so both are patched; the depth keeps the factor from applying twice
         [ThreadStatic] private static int _depth;
 
         internal static void Apply()
@@ -43,7 +41,7 @@ namespace VariableBoosterSize
 
         private static void Postfix(EItemType itemType, ref float __result)
         {
-            if (_depth > 0) return;   // called through CPlayerData: scaled there
+            if (_depth > 0) return;
             Scale(itemType, ref __result);
         }
 
@@ -64,7 +62,7 @@ namespace VariableBoosterSize
                 try { spawned = EnhancedPrefabLoader.API.Epl.Api.Assets.Items.GetSpawnedPackType(t); } catch { }
                 if (spawned == pack) { Factor[t] = factor; boxes++; }
             }
-            Plugin.Log.LogInfo($"{id}: prices x{factor} (pack and {boxes} box(es))");
+            Plugin.Log.LogInfo($"{id}: prices x{factor} for the pack and {Plugin.Count(boxes, "box", "boxes")}");
         }
     }
 }

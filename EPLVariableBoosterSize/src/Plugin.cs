@@ -6,11 +6,8 @@ using HarmonyLib;
 namespace VariableBoosterSize
 {
     /// <summary>
-    /// Enhanced Prefab Loader (EPL) card packs of any size, not only 7 cards. A pack can have any number of slots, given in
-    /// its EPL item ("Slot8", "Slot9"... in SlotWeights, or ranges such as "Slot1-5") or in a separate *.packslots.json
-    /// file that overrides a pack of another mod without editing it. The pack is generated through EPL's own pack
-    /// generator API, and the game's pack opening shows every card: same card by card reveal, all cards on the final
-    /// screen.
+    /// Enhanced Prefab Loader card packs of any size. Slots come from the pack's EPL item or from a *.packslots.json file;
+    /// packs are generated through EPL's pack generator API and the game's opening shows every card.
     /// </summary>
     [BepInPlugin(Guid, Name, Version)]
     [BepInDependency("EnhancedPrefabLoader")]
@@ -19,7 +16,7 @@ namespace VariableBoosterSize
     {
         public const string Guid = "gab.tcgshop.eplvariableboostersize";
         public const string Name = "EPL Variable Booster Size";
-        public const string Version = "1.1.0";
+        public const string Version = "1.2.0";
 
         internal static ManualLogSource Log;
         internal static Harmony Harmony;
@@ -29,10 +26,10 @@ namespace VariableBoosterSize
         {
             Log = Logger;
             RowSpacing = Config.Bind("Pack opening", "RowSpacing", 0.73f, new BepInEx.Configuration.ConfigDescription(
-                "Packs of more than 7 cards show their cards on two rows on the final screen: distance between the middles of the two rows, in card heights (under 1, the bottom row covers the foot of the top one).",
+                "Packs of more than 7 cards: distance between the middles of the two rows on the final screen, in card heights. Under 1, the bottom row overlaps the top one.",
                 new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 2f)));
             CardScale = Config.Bind("Pack opening", "CardScale", 0.75f, new BepInEx.Configuration.ConfigDescription(
-                "Packs of more than 7 cards: size of the cards on the final screen (1 = the game's size). They get smaller on their own when the rows do not fit the screen.",
+                "Packs of more than 7 cards: card size on the final screen, 1 being the game's size. Cards shrink further when the rows do not fit the screen.",
                 new BepInEx.Configuration.AcceptableValueRange<float>(0.5f, 1f)));
             Harmony = new Harmony(Guid);
             PackDefs.LoadFiles();
@@ -43,6 +40,8 @@ namespace VariableBoosterSize
             else Log.LogError("EPL API not available: packs keep their EPL size.");
             Log.LogInfo($"{Name} {Version} loaded.");
         }
+
+        internal static string Count(int n, string one, string many = null) => $"{n} {(n == 1 ? one : many ?? one + "s")}";
 
         private void OnDestroy()
         {

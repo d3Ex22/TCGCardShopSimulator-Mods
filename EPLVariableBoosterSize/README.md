@@ -2,42 +2,39 @@
 
 ![EPL Variable Booster Size](NexusMods/header_1400x400.jpg)
 
-An extension for Enhanced Prefab Loader (EPL): card packs of custom card sets can hold **any number of cards**, not
-only 7. Pack your boosters like the real ones (11 cards for an old set, 10 for a modern one, 4 for a mini set) with a
-rarity table for every card slot, and open them in the game as usual.
+An extension for Enhanced Prefab Loader: card packs of custom sets can hold any number of cards, not only 7. Build
+your boosters like the real ones, 11 cards for an old set or 10 for a modern one, with a rarity table for every slot,
+and open them in the game as usual.
 
-For the MyCurio Pokémon card sets, **EPL Variable Booster Size - MyCurio Suite** gives every booster its real size and
-real pull rates.
+For the MyCurio Pokémon sets, **EPL Variable Booster Size - MyCurio Suite** gives every booster its real size and pull
+rates.
 
 > **AI-made.** This mod was written by an AI (Claude). I'm a developer, but I did not review its code: I made it
 > simply to be able to play and enjoy the game. It is shared as is; use it at your own risk.
 
-## What it does
+## Features
 
-EPL builds a pack from "slots": `Slot1` to `Slot7`, each with the chances of every rarity. Seven is its limit, and the
-game's pack opening is made for exactly 7 cards. This mod lifts both limits, for the packs that ask for it:
+EPL builds a pack from slots, `Slot1` to `Slot7`, each with its rarity chances, and the game's opening is made for
+exactly 7 cards. This mod lifts both limits for the packs that ask for it:
 
-- **Any number of slots**: `Slot8`, `Slot9` and so on, or ranges such as `Slot1-5`, or fewer than 7. One card is drawn
-  per slot, with the slot's rarity chances, like EPL's own packs (no duplicate in a pack unless the pack allows it).
-- **The pack opening follows the pack**: the same card by card reveal as the game, ending on the pack's last card.
-- **Final screen**:
-  - more than 7 cards: **two rows** (the top row gets the extra card of an odd count), fitted to your screen with your
-    camera, whatever the resolution or the screen shape (16:9, 16:10, 21:9...); the cards get smaller only when the
-    rows would not fit;
-  - fewer than 7 cards: **one row**, spread between the two ends of the game's own row.
-- **Only those packs change**: the game's packs and every other EPL pack open exactly as before.
-- The card sets' own card backs, foils and holo effects are kept: EPL still makes every card.
-- **God packs** (EPL's rare packs drawn from the set's god pack weights) get the pack's size too.
-- The auto pack opener goes through EPL's pack generation, so it gets all the cards of the pack too.
+- **Any number of slots**: `Slot8`, `Slot9` and beyond, ranges such as `Slot1-5`, or fewer than 7. One card per slot,
+  drawn like EPL's own packs.
+- **The opening follows the pack**: the game's card by card reveal goes on to the last card.
+- **Final screen**: two rows fitted to your screen for more than 7 cards, whatever its resolution or shape, and one
+  row across the screen for fewer.
+- **God packs** get the pack's size too.
+- Card backs, foils and holo effects are untouched: EPL still makes every card, and the auto pack opener gets every
+  card of the pack.
+- The game's packs and every other EPL pack open exactly as before.
 
-**On its own, this mod changes no pack.** A pack gets another size from a card set mod, from a pack file such as the
-MyCurio Suite, or from your own small file (see below).
+On its own, the mod changes no pack: a pack gets its size from a card set mod, from a pack file such as the MyCurio
+Suite, or from a file of your own.
 
 ## Giving a pack another size
 
-### 1. In the set's EPL JSON
+### In the set's EPL JSON
 
-Write the slots in the pack's `SlotWeights`:
+Write the slots in the pack's `SlotWeights`. The set then requires EPL Variable Booster Size.
 
 ```json
 "SlotWeights": {
@@ -47,23 +44,15 @@ Write the slots in the pack's `SlotWeights`:
 }
 ```
 
-- Slot keys: `SlotN`, ranges `SlotA-B`, or lists `Slot1, Slot2`. Rarity names are the set's own (as in its
-  `Rarities` list).
-- Weights are relative chances inside a slot (they do not need to add up to 100).
+### In a pack file
 
-The set then requires EPL Variable Booster Size.
-
-### 2. In a pack file, for compatibility
-
-Keep the set's EPL JSON at 7 slots and ship a `<anything>.packslots.json` file anywhere under `BepInEx/plugins`.
-Without EPL Variable Booster Size the file is ignored and the packs stay at 7 cards.
-
-Each entry is a pack's `ItemType`:
+Keep the set's EPL JSON at 7 slots and ship a `<anything>.packslots.json` file anywhere under `BepInEx/plugins`, one
+entry per pack `ItemType`. Without EPL Variable Booster Size the file is simply ignored, so a card set mod stays
+playable for everyone.
 
 ```jsonc
 {
-  "_doc": "Keys starting with _ are comments.",
-  "sviPack": {                          // the pack's ItemType, from its set's EPL JSON
+  "sviPack": {
     "SlotWeights": {                    // required: one card per slot
       "Slot1-4": { "Common ": 100 },
       "Slot5-7": { "Uncommon ": 100 },
@@ -71,11 +60,11 @@ Each entry is a pack's `ItemType`:
       "Slot9":   { "Common Reverse Holofoil": 49.3, "Illustration Rare": 5.6, "Special Illustration Rare": 2.2, "Hyper Rare": 1.9 },
       "Slot10":  { "Rare Holofoil": 79.7, "Double Rare": 13.8, "Ultra Rare": 6.6 }
     },
-    "CanHaveDuplicates": false,         // optional: the same card twice in a pack (default: the pack's own setting)
-    "PriceMultiplier": 1.4,             // optional: price of the pack and of its boxes, existing saves too (default: 1)
-    "CanHaveGodPacks": true,            // optional: god packs on or off (default: the pack's own setting)
-    "GodPackPercentage": 0.0002,        // optional: chance of a god pack (default: the pack's own)
-    "GodWeights": {                     // optional: god pack rarities, every card drawn here (default: the set's own)
+    "CanHaveDuplicates": false,         // optional: the same card twice in a pack
+    "PriceMultiplier": 1.4,             // optional: price of the pack and its boxes, existing saves included
+    "CanHaveGodPacks": true,            // optional: god packs on or off
+    "GodPackPercentage": 0.0002,        // optional: chance of a god pack
+    "GodWeights": {                     // optional: god pack rarities, every card is drawn from them
       "Special Illustration Rare": 70,
       "★_Special Illustration Rare": 30
     }
@@ -83,34 +72,31 @@ Each entry is a pack's `ItemType`:
 }
 ```
 
-- Slot keys: `SlotN`, ranges `SlotA-B`, or lists `Slot1, Slot2`. Rarity names are the set's own (as in its
-  `Rarities` list). Weights are relative chances (they do not need to add up to 100).
-- A god pack has as many cards as the pack, all drawn from `GodWeights`.
-- A pack file wins over the set's own JSON. Comments (`//`) are allowed.
-- The files are read when the game starts. The log (`BepInEx/LogOutput.log`) lists every pack it changed, and says
-  why when it skips one (pack not installed, unknown rarity, missing slot).
+- Slot keys are `SlotN`, ranges `SlotA-B` or lists `Slot1, Slot2`. Rarity names are the set's own, and weights are
+  relative chances that do not need to add up to 100.
+- Optional fields fall back to the pack's own settings.
+- A pack file wins over the set's JSON. Keys starting with `_` and `//` comments are ignored.
+- Files are read when the game starts. The BepInEx log lists every pack changed and why one was skipped.
 
 ## Installation
 
-1. Install [BepInEx 5.4.23](https://github.com/BepInEx/BepInEx/releases) and Enhanced Prefab Loader (version 6.8.0).
+1. Install [BepInEx 5.4.23](https://github.com/BepInEx/BepInEx/releases) and Enhanced Prefab Loader 6.8.0 or newer.
 2. Put `EPLVariableBoosterSize.dll` in `BepInEx/plugins/EPLVariableBoosterSize/`.
 
 ## Configuration
 
-`BepInEx/config/gab.tcgshop.eplvariableboostersize.cfg` (also editable in game with the Configuration Manager; the
-next pack opened uses the new values).
+`BepInEx/config/gab.tcgshop.eplvariableboostersize.cfg`, also available in game through the Configuration Manager.
+Changes apply to the next pack opened.
 
-| Section | Setting | Default | |
-|---|---|---|---|
-| Pack opening | `CardScale` | 0.75 | Size of the cards on the final screen of a pack of more than 7 cards (1 = the game's size). Smaller on its own if the rows do not fit the screen. |
-| | `RowSpacing` | 0.73 | Distance between the middles of the two rows, in card heights. Under 1, the bottom row covers the foot of the top one. |
+| Setting | Default | |
+|---|---|---|
+| `CardScale` | 0.75 | Card size on the final screen of a pack of more than 7 cards, 1 being the game's size |
+| `RowSpacing` | 0.73 | Distance between the two rows, in card heights |
 
 ## Compatibility
 
-- Another mod that rewrites the game's pack opening screen for every pack may conflict; the log warns if the
-  opening could not be patched.
-- MyCurio Products' own short packs (box contents) keep its opening; the final screen of our packs is laid out after
-  it, from the game's own places.
+- MyCurio Products keeps its own opening for its short box packs.
+- A mod that rewrites the whole pack opening screen may conflict. The log warns if the opening could not be patched.
 
 ## Build
 
@@ -119,26 +105,27 @@ dotnet build -c Release
 ```
 
 If the game is not in `D:\Games\TCG Card Shop Simulator`, add `-p:GameDir="C:\path\to\the\game"`. Requires the .NET SDK
-8 or newer. `-p:Deploy=true` copies the DLL and its symbols to `BepInEx/scripts/EPLVariableBoosterSize/` for
-[ScriptEngine](https://github.com/BepInEx/BepInEx.Debug) hot reload (the mod removes its patches when unloaded). Packs
-written in a set's own EPL JSON are only read at game start: test those with a full restart.
+8 or newer. `-p:Deploy=true` copies the DLL to `BepInEx/scripts/EPLVariableBoosterSize/` for
+[ScriptEngine](https://github.com/BepInEx/BepInEx.Debug) hot reload. Slots written in a set's EPL JSON are only read at
+game start.
 
 ## Changelog
 
+### 1.2.0
+
+- Works with the latest game version: packs of more than 7 cards no longer freeze the opening.
+
 ### 1.1.0
 
-- God packs now have the pack's size (10 or 11 cards instead of EPL's 7), drawn from the set's god pack weights.
-- New optional pack file field "CanHaveGodPacks": turns a pack's god packs on or off.
-- New optional pack file field "GodPackPercentage": chance of a god pack.
-- New optional pack file field "GodWeights": god pack rarities and weights.
-- New optional pack file field "PriceMultiplier": multiplies the price of a pack and of its boxes (purchase and market price, existing saves too).
-- Comments (//) are allowed in pack files.
+- God packs have the pack's size, drawn from the set's god pack weights.
+- New optional pack file fields: `CanHaveGodPacks`, `GodPackPercentage`, `GodWeights` and `PriceMultiplier`.
+- `//` comments are allowed in pack files.
 
 ### 1.0.0
 
-- Packs smaller than 7 cards, shown on one row spread across the screen.
-- The opening follows god packs (7 cards).
-- The final screen is laid out from the game's own places, even when MyCurio Products moved them.
+- Packs smaller than 7 cards, on one row across the screen.
+- The opening follows god packs.
+- The final screen stays centred when MyCurio Products moved the game's places.
 
 ### 0.1.0
 

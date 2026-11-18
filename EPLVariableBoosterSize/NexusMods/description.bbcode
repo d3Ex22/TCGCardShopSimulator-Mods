@@ -1,53 +1,45 @@
 [center][img]https://raw.githubusercontent.com/d3Ex22/TCGCardShopSimulator-Mods/main/EPLVariableBoosterSize/NexusMods/header_1400x400.jpg[/img]
 
 [size=5][b][color=#E0B13A]Boosters of any size for Enhanced Prefab Loader card sets.[/color][/b][/size]
-[size=3][color=#C9C9C9]Pack custom boosters like the real ones (11 cards, 10 cards, 4 cards...) with a rarity table per slot, and open them in the game as usual.[/color][/size]
+[size=3][color=#C9C9C9]Build your boosters like the real ones, 11 cards, 10 cards or 4, with a rarity table per slot, and open them in the game as usual.[/color][/size]
 
-[url=https://github.com/d3Ex22/TCGCardShopSimulator-Mods/tree/main/EPLVariableBoosterSize][img]https://img.shields.io/badge/source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white[/img][/url] [img]https://img.shields.io/badge/version-1.1.0-B3402E?style=for-the-badge[/img] [img]https://img.shields.io/badge/BepInEx-5.4.23-3E7B3A?style=for-the-badge[/img] [img]https://img.shields.io/badge/AI--made-Claude-E0B13A?style=for-the-badge[/img][/center]
+[url=https://github.com/d3Ex22/TCGCardShopSimulator-Mods/tree/main/EPLVariableBoosterSize][img]https://img.shields.io/badge/source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white[/img][/url] [img]https://img.shields.io/badge/version-1.2.0-B3402E?style=for-the-badge[/img] [img]https://img.shields.io/badge/BepInEx-5.4.23-3E7B3A?style=for-the-badge[/img] [img]https://img.shields.io/badge/AI--made-Claude-E0B13A?style=for-the-badge[/img][/center]
 
 [line]
 
 [size=5][b][color=#E0B13A]Description[/color][/b][/size]
 
-[size=3][b]Enhanced Prefab Loader[/b] (EPL) builds a card pack from slots, [b]Slot1 to Slot7[/b], each with the chances of every rarity. Seven is its limit, and the game's pack opening is made for exactly 7 cards. This extension lifts both limits, only for the packs that ask for it:
+[size=3][b]Enhanced Prefab Loader[/b] builds a card pack from slots, [b]Slot1 to Slot7[/b], each with its rarity chances, and the game's opening is made for exactly 7 cards. This extension lifts both limits for the packs that ask for it:
 
 [list]
-[*][b]Any number of slots[/b]: Slot8, Slot9 and so on, ranges such as Slot1-5, or fewer than 7. One card per slot, drawn with the slot's rarity chances, like EPL's own packs.
-[*][b]The opening follows the pack[/b]: the game's card by card reveal ends on the pack's last card.
-[*][b]Final screen[/b]: two rows fitted to your screen for more than 7 cards (any resolution, 16:9, 16:10, 21:9...), one row spread across the screen for fewer.
-[*][b]Other packs are untouched[/b]: the game's packs and every other EPL pack open exactly as before.
+[*][b]Any number of slots[/b]: Slot8, Slot9 and beyond, ranges such as Slot1-5, or fewer than 7. One card per slot, drawn like EPL's own packs.
+[*][b]The opening follows the pack[/b]: the game's card by card reveal goes on to the last card.
+[*][b]Final screen[/b]: two rows fitted to your screen for more than 7 cards, whatever its resolution or shape, and one row across the screen for fewer.
 [*][b]God packs[/b] get the pack's size too.
-[*][b]MyCurio Pokémon sets[/b]: the [b]MyCurio Suite[/b] (separate download) gives every MyCurio booster its real size and real pull rates.
+[*][b]Other packs are untouched[/b]: the game's packs and every other EPL pack open exactly as before.
+[*][b]MyCurio Pokémon sets[/b]: the [b]MyCurio Suite[/b], a separate download, gives every MyCurio booster its real size and pull rates.
 [/list][/size]
 
 [center][img]https://raw.githubusercontent.com/d3Ex22/TCGCardShopSimulator-Mods/main/EPLVariableBoosterSize/NexusMods/main_1920x1080.jpg[/img][/center]
 
-[size=3][color=#E9DCB5][b]On its own, this mod changes no pack:[/b][/color] a pack gets another size from a card set mod, from a pack file such as the MyCurio Suite, or from your own small file (see below).[/size]
+[size=3]On its own, the mod changes no pack: a pack gets its size from a card set mod, from a pack file such as the MyCurio Suite, or from a file of your own.[/size]
 
 [line]
 
 [size=5][b][color=#E0B13A]Giving a pack another size[/color][/b][/size]
 
-[size=4][b][color=#E9DCB5]🎴 1. In the set's EPL JSON[/color][/b][/size]
-[size=3]Write the slots in the pack's [b]SlotWeights[/b]:
+[size=4][b][color=#E9DCB5]In the set's EPL JSON[/color][/b][/size]
+[size=3]Write the slots in the pack's [b]SlotWeights[/b]. The set then requires EPL Variable Booster Size.
 [code]"SlotWeights": {
   "Slot1-7":  { "Common": 100 },
   "Slot8-10": { "Uncommon": 100 },
   "Slot11":   { "Rare": 70, "Holo Rare": 30 }
-}[/code]
-[list]
-[*]Slot keys: [i]SlotN[/i], ranges [i]SlotA-B[/i] or lists [i]Slot1, Slot2[/i]. Rarity names are the set's own.
-[*]Weights are relative chances inside a slot.
-[/list]
-The set then requires EPL Variable Booster Size.[/size]
+}[/code][/size]
 
-[size=4][b][color=#E9DCB5]📝 2. In a pack file, for compatibility[/color][/b][/size]
-[size=3]Keep the set's EPL JSON at 7 slots and ship a [b]anything.packslots.json[/b] file anywhere under [i]BepInEx/plugins[/i]. Without EPL Variable Booster Size the file is ignored and the packs stay at 7 cards.
-
-Each entry is a pack's [b]ItemType[/b]:
+[size=4][b][color=#E9DCB5]In a pack file[/color][/b][/size]
+[size=3]Keep the set's EPL JSON at 7 slots and ship a [b]anything.packslots.json[/b] file anywhere under [i]BepInEx/plugins[/i], one entry per pack ItemType. Without EPL Variable Booster Size the file is simply ignored, so a card set mod stays playable for everyone.
 [code]{
-  "_doc": "Keys starting with _ are comments.",
-  "sviPack": {                          // the pack's ItemType, from its set's EPL JSON
+  "sviPack": {
     "SlotWeights": {                    // required: one card per slot
       "Slot1-4": { "Common ": 100 },
       "Slot5-7": { "Uncommon ": 100 },
@@ -55,31 +47,31 @@ Each entry is a pack's [b]ItemType[/b]:
       "Slot9":   { "Common Reverse Holofoil": 49.3, "Illustration Rare": 5.6, "Special Illustration Rare": 2.2, "Hyper Rare": 1.9 },
       "Slot10":  { "Rare Holofoil": 79.7, "Double Rare": 13.8, "Ultra Rare": 6.6 }
     },
-    "CanHaveDuplicates": false,         // optional: the same card twice in a pack (default: the pack's own setting)
-    "PriceMultiplier": 1.4,             // optional: price of the pack and of its boxes, existing saves too (default: 1)
-    "CanHaveGodPacks": true,            // optional: god packs on or off (default: the pack's own setting)
-    "GodPackPercentage": 0.0002,        // optional: chance of a god pack (default: the pack's own)
-    "GodWeights": {                     // optional: god pack rarities, every card drawn here (default: the set's own)
+    "CanHaveDuplicates": false,         // optional: the same card twice in a pack
+    "PriceMultiplier": 1.4,             // optional: price of the pack and its boxes, existing saves included
+    "CanHaveGodPacks": true,            // optional: god packs on or off
+    "GodPackPercentage": 0.0002,        // optional: chance of a god pack
+    "GodWeights": {                     // optional: god pack rarities, every card is drawn from them
       "Special Illustration Rare": 70,
       "★_Special Illustration Rare": 30
     }
   }
 }[/code]
 [list]
-[*]Slot keys: [i]SlotN[/i], ranges [i]SlotA-B[/i] or lists [i]Slot1, Slot2[/i]. Rarity names are the set's own. Weights are relative chances.
-[*]A god pack has as many cards as the pack, all drawn from GodWeights.
-[*]A pack file wins over the set's own JSON. Comments (//) are allowed.
-[*]Read when the game starts; the BepInEx log lists every pack changed and why one was skipped.
+[*]Slot keys are [i]SlotN[/i], ranges [i]SlotA-B[/i] or lists [i]Slot1, Slot2[/i]. Rarity names are the set's own, and weights are relative chances.
+[*]Optional fields fall back to the pack's own settings.
+[*]A pack file wins over the set's JSON. Keys starting with _ and // comments are ignored.
+[*]Files are read when the game starts. The BepInEx log lists every pack changed and why one was skipped.
 [/list][/size]
 
 [line]
 
 [size=5][b][color=#E0B13A]Settings[/color][/b][/size]
 
-[size=3][i]BepInEx/config/gab.tcgshop.eplvariableboostersize.cfg[/i], also in game with the Configuration Manager:
+[size=3][i]BepInEx/config/gab.tcgshop.eplvariableboostersize.cfg[/i], also available in game through the Configuration Manager:
 [list]
-[*][b]CardScale[/b] (0.75): size of the cards on the final screen of a big pack. Smaller on its own if the rows do not fit the screen.
-[*][b]RowSpacing[/b] (0.73): distance between the middles of the two rows, in card heights.
+[*][b]CardScale[/b] (0.75): card size on the final screen of a pack of more than 7 cards. Cards shrink further when the rows do not fit.
+[*][b]RowSpacing[/b] (0.73): distance between the two rows, in card heights.
 [/list][/size]
 
 [line]
@@ -87,28 +79,29 @@ Each entry is a pack's [b]ItemType[/b]:
 [size=5][b][color=#E0B13A]Installation[/color][/b][/size]
 
 [size=3][list=1]
-[*]Install [b]BepInEx 5.4.23[/b] and [b]Enhanced Prefab Loader[/b] (version 6.8.0).
-[*]Put [i]EPLVariableBoosterSize.dll[/i] in [i]BepInEx/plugins/EPLVariableBoosterSize/[/i].
+[*]Install [b]BepInEx 5.4.23[/b] and [b]Enhanced Prefab Loader[/b] 6.8.0 or newer.
+[*]Install with your mod manager, or put [i]EPLVariableBoosterSize.dll[/i] in [i]BepInEx/plugins/EPLVariableBoosterSize/[/i].
 [/list][/size]
 
 [line]
 
 [size=5][b][color=#E0B13A]Changelog[/color][/b][/size]
 
-[size=3][b]1.1.0[/b]
+[size=3][b]1.2.0[/b]
 [list]
-[*]God packs now have the pack's size (10 or 11 cards instead of EPL's 7), drawn from the set's god pack weights.
-[*]New optional pack file field "CanHaveGodPacks": turns a pack's god packs on or off.
-[*]New optional pack file field "GodPackPercentage": chance of a god pack.
-[*]New optional pack file field "GodWeights": god pack rarities and weights.
-[*]New optional pack file field "PriceMultiplier": multiplies the price of a pack and of its boxes (purchase and market price, existing saves too).
-[*]Comments (//) are allowed in pack files.
+[*]Works with the latest game version: packs of more than 7 cards no longer freeze the opening.
+[/list]
+[b]1.1.0[/b]
+[list]
+[*]God packs have the pack's size, drawn from the set's god pack weights.
+[*]New optional pack file fields: CanHaveGodPacks, GodPackPercentage, GodWeights and PriceMultiplier.
+[*]// comments are allowed in pack files.
 [/list]
 [b]1.0.0[/b]
 [list]
-[*]Packs smaller than 7 cards, shown on one row spread across the screen.
-[*]The opening follows god packs (7 cards).
-[*]The final screen is laid out from the game's own places, even when MyCurio Products moved them.
+[*]Packs smaller than 7 cards, on one row across the screen.
+[*]The opening follows god packs.
+[*]The final screen stays centred when MyCurio Products moved the game's places.
 [/list]
 [b]0.1.0[/b]
 [list]
