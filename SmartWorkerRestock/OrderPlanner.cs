@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace SmartWorkerRestock
 {
-    /// <summary>Game managers read from their CSingleton instance field (CSingleton.Instance can search the whole scene or create one).</summary>
+    /// <summary>Game managers read from their CSingleton field: CSingleton.Instance can search the scene or create one.</summary>
     internal static class Game
     {
         private static readonly Dictionary<Type, FieldInfo> Fields = new Dictionary<Type, FieldInfo>();
@@ -32,12 +32,8 @@ namespace SmartWorkerRestock
     }
 
     /// <summary>
-    /// Stock check and automatic order.
-    ///  - Need: for each shop shelf compartment filled at or below the threshold, the items missing to fill it, per item.
-    ///  - Available: everything the workers can use without ordering: boxes stored on warehouse shelves (data records),
-    ///    every box object (floor, carried, on a shelf) and the boxes already ordered and waiting to arrive.
-    ///  - Order: (need + reserve buffer − available) rounded up to whole boxes, emptiest shelves first, within the money
-    ///    above the reserve, paid and booked exactly like the game's restock checkout.
+    /// Stock check and automatic order: what the shop compartments at or below the threshold miss, minus what is stored,
+    /// lying around or on its way, in whole boxes, emptiest shelves first, paid like the game's restock checkout.
     /// </summary>
     internal static class OrderPlanner
     {
@@ -112,7 +108,7 @@ namespace SmartWorkerRestock
             var have = new Dictionary<EItemType, int>();
             void Add(EItemType i, int n) { if (i != EItemType.None && n > 0) have[i] = (have.TryGetValue(i, out int v) ? v : 0) + n; }
 
-            // Boxes stored on warehouse shelves: data records since the game's storage rework (Auto Worker Order missed them)
+            // Boxes stored on warehouse shelves are data records, not objects
             var comps = Game.WarehouseCompartments();
             if (comps != null)
                 foreach (var c in comps)
@@ -120,12 +116,12 @@ namespace SmartWorkerRestock
                     if (c == null) continue;
                     for (int k = 0; k < c.GetStoredBoxRecordCount(); k++) { var r = c.PeekStoredBoxRecord(k); Add(r.itemType, r.amount); }
                 }
-            // Every box object: on the floor, carried, or stored but taken out (materialized)
+            // Every box object: on the floor, carried, or just taken out of a shelf
             var rm = Game.Get<RestockManager>();
             if (rm != null && rm.m_ItemPackagingBoxList != null)
                 foreach (var b in rm.m_ItemPackagingBoxList)
                     if (b != null && b.m_ItemCompartment != null) Add(b.m_ItemCompartment.GetItemType(), b.m_ItemCompartment.GetItemCount());
-            // Ordered, waiting to be delivered (box counts)
+            // Ordered and not delivered yet, in boxes
             var idx = CPlayerData.m_SpawnBoxRestockIndexWaitingList; var cnt = CPlayerData.m_SpawnBoxItemCountWaitingList;
             if (idx != null && cnt != null)
                 for (int i = 0; i < Math.Min(idx.Count, cnt.Count); i++)
@@ -151,6 +147,8 @@ namespace SmartWorkerRestock
             return any;
         }
 
+        private static string Plural(int n, string one, string many = null) => $"{n} {(n == 1 ? one : many ?? one + "s")}";
+
         private static float DeliveryFee(int boxes) => boxes <= 0 ? 0f : Mathf.Clamp(10 * boxes / 5, 5, 1000); // the game's checkout formula
 
         /// <summary>Fits the order in the money above the reserve (emptiest shelves first), then pays it like the game's checkout.</summary>
@@ -172,7 +170,7 @@ namespace SmartWorkerRestock
             }
             if (bought.Count == 0)
             {
-                Plugin.Log.LogInfo($"Stock check: {lines.Count} item(s) to order, but not enough money above the reserve ({p.MoneyReserve.Value:0}).");
+                Plugin.Log.LogInfo($"Stock check: {Plural(lines.Count, "item")} to order, not enough money above the {p.MoneyReserve.Value:0} reserve.");
                 return;
             }
             float fee = DeliveryFee(boxes), total = goods + fee;
@@ -195,7 +193,7 @@ namespace SmartWorkerRestock
                 LastOrdered[l.Item] = now;
             }
             CEventManager.QueueEvent(new CEventPlayer_AddShopExp(boxes * 5));
-            Plugin.Log.LogInfo($"Workers ordered {boxes} box(es) of {bought.Count} item(s): " +
+            Plugin.Log.LogInfo($"Workers ordered {Plural(boxes, "box", "boxes")} of {Plural(bought.Count, "item")}: " +
                                string.Join(", ", bought.Select(l => $"{l.Item} x{l.Boxes}")) +
                                $". Goods {goods:0.00} + delivery {fee:0.00} = {total:0.00}.");
         }

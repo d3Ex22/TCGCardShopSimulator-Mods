@@ -17,14 +17,9 @@ namespace SmartWorkerRestock
     }
 
     /// <summary>
-    /// Emptiest shelves first. The game picks the product to restock and then the shop compartment at random.
-    /// Two light hooks, no rewrite of the game's code:
-    ///  - before the worker looks for a box (AttemptFindBoxForRestock, prefix): the product becomes the one of the emptiest
-    ///    compartment among the products that have a box the worker can take now;
-    ///  - after the worker picked the compartment to fill (AttemptFindShelf, postfix): he is sent to the emptiest labeled
-    ///    compartment of the product he carries.
-    /// Compartments another worker is already walking to are skipped, and each other worker fetching a box of a product
-    /// "keeps" one compartment of that product, so several workers spread over the emptiest compartments.
+    /// Emptiest shelves first. Before the box search, the product becomes the one of the emptiest compartment among those
+    /// with a box available now; after the shelf search, the worker goes to the emptiest compartment of what he carries.
+    /// Compartments another worker walks to are skipped, and workers fetching the same product spread over its compartments.
     /// </summary>
     internal static class RestockPriority
     {
@@ -35,14 +30,19 @@ namespace SmartWorkerRestock
         {
             var find = AccessTools.Method(typeof(Worker), "AttemptFindBoxForRestock");
             var shelf = AccessTools.Method(typeof(Worker), "AttemptFindShelf");
-            if (find == null || shelf == null || HeldBox == null || CanFindStored == null)
-            { Plugin.Log.LogWarning("Worker restock choice not found (different game version?): emptiest shelves are not preferred."); return; }
-            h.Patch(find, prefix: new HarmonyMethod(typeof(RestockPriority), nameof(BeforeFindBox)));
-            h.Patch(shelf, postfix: new HarmonyMethod(typeof(RestockPriority), nameof(AfterFindShelf)));
+            if (find == null || shelf == null || HeldBox == null || CanFindStored == null || BoxPreference.PendingShelf == null)
+            {
+                Plugin.Log.LogWarning("Worker restock choice not found: emptiest shelves first is off.");
+                return;
+            }
+            // First: the product must be set before another mod runs its own search (Worker AI Overhaul)
+            h.Patch(find, prefix: new HarmonyMethod(typeof(RestockPriority), nameof(BeforeFindBox)) { priority = Priority.First });
+            h.Patch(shelf, prefix: new HarmonyMethod(typeof(RestockPriority), nameof(BeforeFindShelf)) { priority = Priority.First },
+                postfix: new HarmonyMethod(typeof(RestockPriority), nameof(AfterFindShelf)) { priority = Priority.Last });
         }
 
         private static ShelfPriority Mode => Plugin.Instance.RestockPriorityMode.Value;
-        private static bool Off => Plugin.Blocked || Mode == ShelfPriority.GameDefault;
+        private static bool Off => Plugin.Blocked || Mode == ShelfPriority.GameDefault || WorkerAiConflict.YieldSteering;
 
         /// <summary>Negative when compartment a needs stock more than b.</summary>
         private static int Compare(Worker w, ShelfCompartment a, ShelfCompartment b)
@@ -102,11 +102,16 @@ namespace SmartWorkerRestock
             foreach (var b in list)
             {
                 if (!b.IsValidObject() || !b.CanWorkerTakeBox() || b.GetItemCount() <= 0) continue;
-                if (!b.GetIsStored() && b.GetPosition().y > 2f) continue; // the game's own reach limit
+                if (!b.GetIsStored() && b.GetPosition().y > 2f) continue; // the game's reach limit
                 bool taken = false;
                 if (workers != null)
                     foreach (var w in workers)
-                        if (w != null && w != self && w.IsActive() && b.RefersToSameBox(w.GetCurrentItemBox())) { taken = true; break; }
+                        if (w != null && w != self && w.IsActive() && (b.RefersToSameBox(w.GetCurrentItemBox())
+                            || b.IsStored && BoxPreference.PendingShelf.GetValue(w) == (object)b.storedCompartment))
+                        {
+                            taken = true;
+                            break;
+                        }
                 if (!taken) result.Add(b.GetItemType());
             }
             return result;
@@ -124,30 +129,36 @@ namespace SmartWorkerRestock
                     if (item == EItemType.None) continue;
                     var comps = FreeCompartments(__instance, item);
                     int skip = Fetching(__instance, item);
-                    if (comps.Count <= skip) continue; // other workers already cover every compartment of this product
+                    if (comps.Count <= skip) continue;
                     comps.Sort((a, b) => Compare(__instance, a, b));
                     var c = comps[skip];
                     if (best == null || Compare(__instance, c, best) < 0) best = c;
                 }
-                if (best == null) return; // nothing labeled to fill: keep the game's choice
+                if (best == null) return;
                 var product = best.GetItemType();
                 if (product != __instance.m_TargetBoxItemType)
-                    Plugin.Log.LogDebug($"Worker '{__instance.name}' restocks {product} first ({best.GetItemCount()}/{best.GetMaxItemCount()} on the shelf) instead of {__instance.m_TargetBoxItemType}.");
+                    Plugin.Log.LogDebug($"{__instance.name} restocks {product} first, {best.GetItemCount()}/{best.GetMaxItemCount()} on the shelf.");
                 __instance.m_TargetBoxItemType = product;
             }
-            catch (Exception e) { Plugin.Log.LogWarning("Emptiest shelf first skipped (product): " + e.Message); }
+            catch (Exception e) { Plugin.Log.LogWarning("Emptiest shelves first skipped: " + e.Message); }
         }
+
+        // Another mod may replace or skip the game's search: only a compartment chosen during this call is considered
+        [ThreadStatic] private static ShelfCompartment _before;
+
+        private static void BeforeFindShelf(Worker __instance) => _before = __instance != null ? __instance.m_CurrentItemCompartment : null;
 
         private static void AfterFindShelf(Worker __instance, bool __runOriginal)
         {
             try
             {
-                if (Off || !__runOriginal || __instance == null || __instance.m_CurrentState != EWorkerState.WalkToShelf) return;
+                if (Off || __instance == null || __instance.m_CurrentState != EWorkerState.WalkToShelf) return;
                 var held = HeldBox.GetValue(__instance) as InteractablePackagingBox_Item;
                 var chosen = __instance.m_CurrentItemCompartment;
+                if (!__runOriginal && chosen == _before) return;
                 if (held == null || held.m_ItemCompartment == null || chosen == null) return;
                 var comps = FreeCompartments(__instance, held.m_ItemCompartment.GetItemType());
-                if (comps.Count == 0) return; // only unlabeled compartments: keep the game's choice
+                if (comps.Count == 0) return;
                 comps.Sort((a, b) => Compare(__instance, a, b));
                 var best = comps[0];
                 if (best == chosen || (chosen.GetItemType() == best.GetItemType() && Compare(__instance, chosen, best) <= 0)) return;
@@ -155,9 +166,9 @@ namespace SmartWorkerRestock
                 if (!BoxPreference.StartPath(__instance, dest)) return;
                 __instance.m_CurrentItemCompartment = best;
                 __instance.m_CurrentShelf = best.GetShelf();
-                Plugin.Log.LogDebug($"Worker '{__instance.name}' fills the emptiest {best.GetItemType()} compartment ({best.GetItemCount()}/{best.GetMaxItemCount()}).");
+                Plugin.Log.LogDebug($"{__instance.name} fills the emptiest {best.GetItemType()} compartment, {best.GetItemCount()}/{best.GetMaxItemCount()}.");
             }
-            catch (Exception e) { Plugin.Log.LogWarning("Emptiest shelf first skipped (compartment): " + e.Message); }
+            catch (Exception e) { Plugin.Log.LogWarning("Emptiest shelves first skipped: " + e.Message); }
         }
     }
 }

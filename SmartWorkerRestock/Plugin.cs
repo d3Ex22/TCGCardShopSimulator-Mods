@@ -9,29 +9,29 @@ using UnityEngine;
 namespace SmartWorkerRestock
 {
     /// <summary>
-    /// Smart Worker Restock: workers order the stock the shop shelves need, counting what is really available, use up
-    /// opened boxes before opening new ones, and restock the emptiest shelves first. Replaces "Auto Worker Order" (stays idle while that mod is loaded).
-    ///
-    /// Why a new mod: the game now keeps boxes stored on warehouse shelves as data records (StoredBoxRecord) instead of box
-    /// objects. Auto Worker Order only counts box objects, so it saw an empty warehouse and reordered every pass (confirmed
-    /// in game: it ordered an item while 16 of it were stored), which kept new boxes on the floor that workers took first.
+    /// Smart Worker Restock: workers order the stock the shop shelves need, counting boxes stored on warehouse shelves,
+    /// use up opened boxes before opening new ones, and restock the emptiest shelves first. Replaces Auto Worker Order.
     /// </summary>
     [BepInPlugin(Guid, "Smart Worker Restock", Version)]
     public class Plugin : BaseUnityPlugin
     {
         public const string Guid = "gab.tcgshop.smartworkerrestock";
-        public const string Version = "1.4.0";
+        public const string Version = "1.5.0";
 
         internal static Plugin Instance;
         internal static ManualLogSource Log;
 
-        internal ConfigEntry<bool> Enabled, RequireWorker, PreferBigBox, PreferOpenedBoxes, HoldTakenBoxes;
+        internal ConfigEntry<bool> Enabled, RequireWorker, PreferBigBox, PreferOpenedBoxes;
         internal ConfigEntry<int> OrderBelowPercent, ExtraBoxesInReserve, MaxItemTypesPerOrder, ReorderCooldownSeconds;
         internal ConfigEntry<float> CheckIntervalSeconds, MoneyReserve;
         internal ConfigEntry<ShelfPriority> RestockPriorityMode;
+        internal ConfigEntry<WorkerAiMode> WorkerAiOverhaulMode;
 
+        private Harmony _harmony;
         private float _next;
         private bool _blockedByAwo, _awoChecked;
+
+        internal static bool Blocked => Instance == null || !Instance.Enabled.Value || Instance._blockedByAwo;
 
         private void Awake()
         {
@@ -42,66 +42,55 @@ namespace SmartWorkerRestock
             RequireWorker = Config.Bind(o, "RequireHiredWorker", true, "Only order while at least one worker is on the clock.");
             CheckIntervalSeconds = Config.Bind(o, "CheckIntervalSeconds", 45f, "Seconds between two stock checks.");
             OrderBelowPercent = Config.Bind(o, "OrderBelowFillPercent", 80, new ConfigDescription(
-                "A shelf compartment counts as needing stock when it is filled at or below this percentage.", new AcceptableValueRange<int>(0, 100),
+                "A shelf compartment needs stock when it is filled at or below this percentage.", new AcceptableValueRange<int>(0, 100),
                 new ConfigurationManagerAttributes { ShowRangeAsPercent = true }));
             ExtraBoxesInReserve = Config.Bind(o, "ExtraBoxesInReserve", 0, new ConfigDescription(
-                "Boxes to keep in reserve (warehouse, floor, on the way) for each item that needs stock, on top of what the shelves need.",
-                new AcceptableValueRange<int>(0, 20)));
-            MoneyReserve = Config.Bind(o, "MoneyReserve", 500f, "Money never spent by automatic orders.");
+                "Extra boxes to keep for each item that needs stock, on top of what the shelves need.", new AcceptableValueRange<int>(0, 20)));
+            MoneyReserve = Config.Bind(o, "MoneyReserve", 500f, "Money automatic orders never spend.");
             MaxItemTypesPerOrder = Config.Bind(o, "MaxItemTypesPerOrder", 20, new ConfigDescription(
-                "Maximum number of different items in one order (the emptiest shelves come first).", new AcceptableValueRange<int>(1, 100),
+                "Different items in one order, emptiest shelves first.", new AcceptableValueRange<int>(1, 100),
                 new ConfigurationManagerAttributes { ShowRangeAsPercent = false }));
             ReorderCooldownSeconds = Config.Bind(o, "ReorderCooldownSeconds", 180, new ConfigDescription(
-                "After ordering an item, it is not ordered again for this long (boxes may take a while to appear, e.g. with a delivery truck mod).",
-                new AcceptableValueRange<int>(0, 1800)));
+                "Wait before ordering the same item again, so boxes still on their way are not ordered twice.", new AcceptableValueRange<int>(0, 1800)));
             PreferBigBox = Config.Bind(o, "PreferBigBox", true, "Order big boxes when both sizes are unlocked.");
             PreferOpenedBoxes = Config.Bind(w, "UseOpenedBoxesFirst", true,
-                "When a worker would open a full box, he takes the emptiest opened box of the same item instead (on the floor or stored on a warehouse shelf).");
-
+                "A worker about to open a full box takes the emptiest opened box of the same item instead, on the floor or on a warehouse shelf.");
             RestockPriorityMode = Config.Bind(w, "RestockPriority", ShelfPriority.LowestCount,
-                "Which shop compartment workers restock first. LowestCount: the one holding the fewest items. " +
-                "LowestFillPercent: the one with the lowest fill percentage. GameDefault: the game's random choice.");
+                "Which shop compartment workers restock first. LowestCount: the fewest items. LowestFillPercent: the lowest fill. GameDefault: the game's random choice.");
+            WorkerAiOverhaulMode = Config.Bind(w, "WorkerAIOverhaulMode", WorkerAiMode.Ask,
+                "With Worker AI Overhaul, which also chooses the box and shelf workers restock. Ask: asked once a save is loaded. " +
+                "Compatibility: Worker AI Overhaul chooses, Smart Worker Restock only orders stock. Override: Smart Worker Restock chooses.");
 
-            HoldTakenBoxes = Config.Bind(w, "KeepTakenBoxesInShelf", true,
-                "A box a worker goes to take from a warehouse shelf stays still in the shelf until he picks it up, instead of " +
-                "being pushed out onto the floor (game behaviour where shelves stand side by side). If he changes his mind, " +
-                "the box is stored in the shelf again.");
-
-            // One id per load (ScriptEngine reload: the old instance is destroyed after the new one started)
+            // One id per load: on a ScriptEngine reload the old instance is destroyed after the new one started
             _harmony = new Harmony(Guid + "." + DateTime.Now.Ticks);
             BoxPreference.Patch(_harmony);
             RestockPriority.Patch(_harmony);
-            StoredBoxHold.Patch(_harmony);
             Log.LogInfo($"Smart Worker Restock {Version} loaded.");
         }
 
         private void Update()
         {
             if (!Enabled.Value) return;
-            StoredBoxHold.Tick();
             if (!_awoChecked)
             {
                 _awoChecked = true;
                 _blockedByAwo = AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "AutoWorkerOrder");
-                if (_blockedByAwo)
-                    Log.LogWarning("Auto Worker Order is also installed: Smart Worker Restock replaces it and stays idle until it is removed " +
-                                   "(both would order and steer workers).");
+                if (_blockedByAwo) Log.LogWarning("Auto Worker Order is installed: Smart Worker Restock replaces it and stays idle until it is removed.");
             }
             if (_blockedByAwo || Time.unscaledTime < _next) return;
             _next = Time.unscaledTime + Mathf.Max(10f, CheckIntervalSeconds.Value);
             OrderPlanner.Run();
         }
 
-        private Harmony _harmony;
+        private void OnGUI()
+        {
+            if (!Blocked) WorkerAiConflict.OnGUI();
+        }
 
-        /// <summary>Unloaded (game closing, or a reload of BepInEx/scripts during development): every patch goes.</summary>
         private void OnDestroy()
         {
             _harmony?.UnpatchSelf();
-            StoredBoxHold.Clear();
             if (Instance == this) Instance = null;
         }
-
-        internal static bool Blocked => Instance == null || !Instance.Enabled.Value || Instance._blockedByAwo;
     }
 }
