@@ -3,7 +3,7 @@
 [size=5][b][color=#E0B13A]Your workers order what your shelves need, finish opened boxes first and refill the emptiest shelves first.[/color][/b][/size]
 [size=3][color=#C9C9C9]Built for the latest game version and made to sit alongside other worker mods.[/color][/size]
 
-[url=https://github.com/d3Ex22/TCGCardShopSimulator-Mods/tree/main/SmartWorkerRestock][img]https://img.shields.io/badge/source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white[/img][/url] [img]https://img.shields.io/badge/version-1.5.0-B3402E?style=for-the-badge[/img] [img]https://img.shields.io/badge/BepInEx-5.4.23-3E7B3A?style=for-the-badge[/img] [img]https://img.shields.io/badge/AI--made-Claude-E0B13A?style=for-the-badge[/img][/center]
+[url=https://github.com/d3Ex22/TCGCardShopSimulator-Mods/tree/main/SmartWorkerRestock][img]https://img.shields.io/badge/source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white[/img][/url] [img]https://img.shields.io/badge/version-1.6.0-B3402E?style=for-the-badge[/img] [img]https://img.shields.io/badge/BepInEx-5.4.23-3E7B3A?style=for-the-badge[/img] [img]https://img.shields.io/badge/AI--made-Claude-E0B13A?style=for-the-badge[/img][/center]
 
 [line]
 
@@ -13,6 +13,7 @@
 
 [list]
 [*][b]Automatic orders[/b] that buy only what your shelves need, counting the stock you already have.
+[*][b]Loose boxes put away first[/b]: boxes left on the floor go to the warehouse shelves.
 [*][b]Opened boxes first[/b]: workers finish half-used boxes before opening new ones.
 [*][b]Emptiest shelves first[/b]: workers refill what is running out before what is almost full.
 [/list][/size]
@@ -38,13 +39,18 @@
 [size=4][b][color=#E9DCB5]Emptiest shelves first[/color][/b][/size]
 [size=3]The game picks the item to restock and the compartment to fill at random. With Smart Worker Restock, a worker restocks the item whose compartment is the [b]emptiest[/b], then fills the emptiest compartment of what he carries, the nearest one on a tie. Workers going for the same item spread over its compartments. [i]RestockPriority[/i] sets what "emptiest" means: fewest items, lowest fill, or the game's random choice.[/size]
 
+[size=4][b][color=#E9DCB5]Loose boxes put away first[/color][/b][/size]
+[size=3]Workers put the boxes left on the floor [b]away on warehouse shelves[/b] before restocking the shop shelves. Boxes with no room on a warehouse shelf stay where they are. Turn [i]StoreLooseBoxesFirst[/i] off to restock first, as the game does.[/size]
+
 [size=4][b][color=#E9DCB5]Worker AI Overhaul[/color][/b][/size]
 [size=3]Worker AI Overhaul also decides which box and shelf your workers go for. When it is installed, a window lets you choose once a save is loaded:
 [list]
 [*][b]Compatibility mode[/b]: Worker AI Overhaul makes those choices and Smart Worker Restock only orders stock.
 [*][b]Keep Smart Worker Restock's choices[/b]: opened boxes first and emptiest shelves first apply as usual.
 [/list]
-You can change it later with [i]WorkerAIOverhaulMode[/i].[/size]
+You can change it later with [i]WorkerAIOverhaulMode[/i].
+
+[b]Worker AI Overhaul 1.4.6 does not work on game version 1.07[/b]: workers lose track of the boxes stored on warehouse shelves, which then show no stock. Remove it until it is updated.[/size]
 
 [spoiler][size=3][b]Settings[/b]: [i]BepInEx/config/gab.tcgshop.smartworkerrestock.cfg[/i], also available in game through the Configuration Manager.
 [list]
@@ -58,6 +64,7 @@ You can change it later with [i]WorkerAIOverhaulMode[/i].[/size]
 [*][b]ReorderCooldownSeconds[/b] (180): wait before ordering the same item again.
 [*][b]PreferBigBox[/b] (true): order big boxes when both sizes are unlocked.
 [*][b]UseOpenedBoxesFirst[/b] (true): opened boxes before full ones.
+[*][b]StoreLooseBoxesFirst[/b] (true): put loose boxes away before restocking.
 [*][b]RestockPriority[/b] (LowestCount): LowestCount, LowestFillPercent or GameDefault.
 [*][b]WorkerAIOverhaulMode[/b] (Ask): Ask, Compatibility or Override.
 [/list]
@@ -81,7 +88,7 @@ Every order and every opened box taken instead of a full one is written to the B
 [*][b]TCG Card Shop Simulator[/b], latest version, and [url=https://github.com/BepInEx/BepInEx/releases]BepInEx 5.4.23[/url].
 [*]At least one hired worker, or turn [i]RequireHiredWorker[/i] off.
 [*]Works alongside Staff Overhaul, QOL Events & Weather, Pallet Delivery and other worker mods.
-[*]With [b]Worker AI Overhaul[/b], you choose which mod handles the workers' choices, see above.
+[*]With [b]Worker AI Overhaul[/b], you choose which mod handles the workers' choices, see above. Its version 1.4.6 does not work on game version 1.07.
 [*]Replaces [b]Auto Worker Order[/b]: do not use both.
 [/list][/size]
 
@@ -101,7 +108,9 @@ Every order and every opened box taken instead of a full one is written to the B
 
 [size=5][b][color=#E0B13A]Changelog[/color][/b][/size]
 
-[spoiler][size=3][b]1.5.0[/b][list]
+[spoiler][size=3][b]1.6.0[/b][list]
+[*]Workers put loose boxes away on warehouse shelves before restocking. Turn StoreLooseBoxesFirst off to keep the old order.
+[/list][b]1.5.0[/b][list]
 [*]Worker AI Overhaul: choose once whether it or Smart Worker Restock handles the workers' box and shelf choices.
 [*]Opened boxes first and emptiest shelves first now also work when another mod runs the workers' search.
 [*]Two workers no longer go for the same box on a warehouse shelf.

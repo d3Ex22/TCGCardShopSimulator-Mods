@@ -51,6 +51,7 @@ namespace SmartWorkerRestock
             try
             {
                 if (Plugin.Blocked || !Plugin.Instance.PreferOpenedBoxes.Value || WorkerAiConflict.YieldSteering || __instance == null) return;
+                if (__instance.m_CurrentState == EWorkerState.SearchingForBoxToStore) return; // sent to put a loose box away
                 var chosen = CurrentItemBox.GetValue(__instance) as InteractablePackagingBox_Item;
                 if (!__runOriginal && chosen == _before) return;
                 // A stored box chosen by the game is only its shelf for now, and already that shelf's emptiest box
@@ -167,7 +168,7 @@ namespace SmartWorkerRestock
             return true;
         }
 
-        private static HashSet<InteractablePackagingBox_Item> ClaimedBoxes(Worker self)
+        internal static HashSet<InteractablePackagingBox_Item> ClaimedBoxes(Worker self)
         {
             Claimed.Clear();
             var list = WorkerManager.GetWorkerList();

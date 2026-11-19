@@ -10,18 +10,19 @@ namespace SmartWorkerRestock
 {
     /// <summary>
     /// Smart Worker Restock: workers order the stock the shop shelves need, counting boxes stored on warehouse shelves,
-    /// use up opened boxes before opening new ones, and restock the emptiest shelves first. Replaces Auto Worker Order.
+    /// put loose boxes away, use up opened boxes before opening new ones, and restock the emptiest shelves first.
+    /// Replaces Auto Worker Order.
     /// </summary>
     [BepInPlugin(Guid, "Smart Worker Restock", Version)]
     public class Plugin : BaseUnityPlugin
     {
         public const string Guid = "gab.tcgshop.smartworkerrestock";
-        public const string Version = "1.5.0";
+        public const string Version = "1.6.0";
 
         internal static Plugin Instance;
         internal static ManualLogSource Log;
 
-        internal ConfigEntry<bool> Enabled, RequireWorker, PreferBigBox, PreferOpenedBoxes;
+        internal ConfigEntry<bool> Enabled, RequireWorker, PreferBigBox, PreferOpenedBoxes, StoreLooseBoxesFirst;
         internal ConfigEntry<int> OrderBelowPercent, ExtraBoxesInReserve, MaxItemTypesPerOrder, ReorderCooldownSeconds;
         internal ConfigEntry<float> CheckIntervalSeconds, MoneyReserve;
         internal ConfigEntry<ShelfPriority> RestockPriorityMode;
@@ -55,6 +56,8 @@ namespace SmartWorkerRestock
             PreferBigBox = Config.Bind(o, "PreferBigBox", true, "Order big boxes when both sizes are unlocked.");
             PreferOpenedBoxes = Config.Bind(w, "UseOpenedBoxesFirst", true,
                 "A worker about to open a full box takes the emptiest opened box of the same item instead, on the floor or on a warehouse shelf.");
+            StoreLooseBoxesFirst = Config.Bind(w, "StoreLooseBoxesFirst", true,
+                "Workers put boxes left on the floor away on warehouse shelves before restocking the shop shelves.");
             RestockPriorityMode = Config.Bind(w, "RestockPriority", ShelfPriority.LowestCount,
                 "Which shop compartment workers restock first. LowestCount: the fewest items. LowestFillPercent: the lowest fill. GameDefault: the game's random choice.");
             WorkerAiOverhaulMode = Config.Bind(w, "WorkerAIOverhaulMode", WorkerAiMode.Ask,
@@ -63,6 +66,7 @@ namespace SmartWorkerRestock
 
             // One id per load: on a ScriptEngine reload the old instance is destroyed after the new one started
             _harmony = new Harmony(Guid + "." + DateTime.Now.Ticks);
+            StoreFirst.Patch(_harmony);
             BoxPreference.Patch(_harmony);
             RestockPriority.Patch(_harmony);
             Log.LogInfo($"Smart Worker Restock {Version} loaded.");

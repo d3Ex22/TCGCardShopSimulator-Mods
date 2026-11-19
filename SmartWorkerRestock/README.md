@@ -2,8 +2,9 @@
 
 ![Smart Worker Restock](NexusMods/header_1400x400.jpg)
 
-Your workers order the stock your shelves need, finish opened boxes before opening new ones and refill the emptiest
-shelves first. Built for the latest version of TCG Card Shop Simulator and made to sit alongside other worker mods.
+Your workers order the stock your shelves need, put loose boxes away, finish opened boxes before opening new ones and
+refill the emptiest shelves first. Built for the latest version of TCG Card Shop Simulator and made to sit alongside
+other worker mods.
 
 > **AI-made.** This mod was written by an AI (Claude). I'm a developer, but I did not review its code: I made it
 > simply to be able to play and enjoy the game. It is shared as is; use it at your own risk.
@@ -34,6 +35,11 @@ the item whose compartment is the emptiest, then fills the emptiest compartment 
 a tie. Workers going for the same item spread over its compartments. `RestockPriority` sets what "emptiest" means:
 fewest items, lowest fill, or the game's random choice.
 
+### Loose boxes put away first
+
+Workers put the boxes left on the floor away on warehouse shelves before restocking the shop shelves. Boxes with no
+room on a warehouse shelf stay where they are. Turn `StoreLooseBoxesFirst` off to restock first, as the game does.
+
 ### Worker AI Overhaul
 
 Worker AI Overhaul also decides which box and shelf your workers go for. When it is installed, a window lets you
@@ -43,6 +49,9 @@ choose once a save is loaded:
 - **Keep Smart Worker Restock's choices**: opened boxes first and emptiest shelves first apply as usual.
 
 You can change it later with `WorkerAIOverhaulMode`.
+
+Worker AI Overhaul 1.4.6 does not work on game version 1.07: workers lose track of the boxes stored on warehouse
+shelves, which then show no stock. Remove it until it is updated.
 
 ## Installation
 
@@ -66,6 +75,7 @@ You can change it later with `WorkerAIOverhaulMode`.
 | `ReorderCooldownSeconds` | 180 | Wait before ordering the same item again |
 | `PreferBigBox` | true | Order big boxes when both sizes are unlocked |
 | `UseOpenedBoxesFirst` | true | Opened boxes before full ones |
+| `StoreLooseBoxesFirst` | true | Put loose boxes away before restocking |
 | `RestockPriority` | LowestCount | `LowestCount`, `LowestFillPercent` or `GameDefault` |
 | `WorkerAIOverhaulMode` | Ask | `Ask`, `Compatibility` or `Override` |
 
