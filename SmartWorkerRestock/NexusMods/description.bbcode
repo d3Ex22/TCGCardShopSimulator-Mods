@@ -42,16 +42,6 @@
 [size=4][b][color=#E9DCB5]Loose boxes put away first[/color][/b][/size]
 [size=3]Workers put the boxes left on the floor [b]away on warehouse shelves[/b] before restocking the shop shelves. Boxes with no room on a warehouse shelf stay where they are. Turn [i]StoreLooseBoxesFirst[/i] off to restock first, as the game does.[/size]
 
-[size=4][b][color=#E9DCB5]Worker AI Overhaul[/color][/b][/size]
-[size=3]Worker AI Overhaul also decides which box and shelf your workers go for. When it is installed, a window lets you choose once a save is loaded:
-[list]
-[*][b]Compatibility mode[/b]: Worker AI Overhaul makes those choices and Smart Worker Restock only orders stock.
-[*][b]Keep Smart Worker Restock's choices[/b]: opened boxes first and emptiest shelves first apply as usual.
-[/list]
-You can change it later with [i]WorkerAIOverhaulMode[/i].
-
-[b]Worker AI Overhaul 1.4.6 does not work on game version 1.07[/b]: workers lose track of the boxes stored on warehouse shelves, which then show no stock. Remove it until it is updated.[/size]
-
 [spoiler][size=3][b]Settings[/b]: [i]BepInEx/config/gab.tcgshop.smartworkerrestock.cfg[/i], also available in game through the Configuration Manager.
 [list]
 [*][b]Enabled[/b] (true): turns the whole mod on or off.
@@ -88,7 +78,7 @@ Every order and every opened box taken instead of a full one is written to the B
 [*][b]TCG Card Shop Simulator[/b], latest version, and [url=https://github.com/BepInEx/BepInEx/releases]BepInEx 5.4.23[/url].
 [*]At least one hired worker, or turn [i]RequireHiredWorker[/i] off.
 [*]Works alongside Staff Overhaul, QOL Events & Weather, Pallet Delivery and other worker mods.
-[*]With [b]Worker AI Overhaul[/b], you choose which mod handles the workers' choices, see above. Its version 1.4.6 does not work on game version 1.07.
+[*]With [b]Worker AI Overhaul[/b], a window asks once which mod handles the workers' box and shelf choices. Change it later with [i]WorkerAIOverhaulMode[/i].
 [*]Replaces [b]Auto Worker Order[/b]: do not use both.
 [/list][/size]
 
@@ -110,6 +100,7 @@ Every order and every opened box taken instead of a full one is written to the B
 
 [spoiler][size=3][b]1.6.0[/b][list]
 [*]Workers put loose boxes away on warehouse shelves before restocking. Turn StoreLooseBoxesFirst off to keep the old order.
+[*]Warning: Worker AI Overhaul 1.4.6 does not work on game version 1.07. Remove it until it is updated.
 [/list][b]1.5.0[/b][list]
 [*]Worker AI Overhaul: choose once whether it or Smart Worker Restock handles the workers' box and shelf choices.
 [*]Opened boxes first and emptiest shelves first now also work when another mod runs the workers' search.

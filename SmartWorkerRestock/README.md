@@ -40,19 +40,6 @@ fewest items, lowest fill, or the game's random choice.
 Workers put the boxes left on the floor away on warehouse shelves before restocking the shop shelves. Boxes with no
 room on a warehouse shelf stay where they are. Turn `StoreLooseBoxesFirst` off to restock first, as the game does.
 
-### Worker AI Overhaul
-
-Worker AI Overhaul also decides which box and shelf your workers go for. When it is installed, a window lets you
-choose once a save is loaded:
-
-- **Compatibility mode**: Worker AI Overhaul makes those choices and Smart Worker Restock only orders stock.
-- **Keep Smart Worker Restock's choices**: opened boxes first and emptiest shelves first apply as usual.
-
-You can change it later with `WorkerAIOverhaulMode`.
-
-Worker AI Overhaul 1.4.6 does not work on game version 1.07: workers lose track of the boxes stored on warehouse
-shelves, which then show no stock. Remove it until it is updated.
-
 ## Installation
 
 1. Install [BepInEx 5.4.23](https://github.com/BepInEx/BepInEx/releases).
