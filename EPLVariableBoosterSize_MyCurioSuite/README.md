@@ -55,6 +55,9 @@ Pull rates are not published by The Pokémon Company: these are estimates from o
 Nothing else is needed: a booster of a MyCurio set you do not have is skipped (one line in `BepInEx/LogOutput.log`).
 To go back to MyCurio's own boosters, remove the folder.
 
+The pack files follow MyCurio's rarities. Keep the suite and your MyCurio sets on the versions listed in the
+changelog: with an older or newer set, a rarity the other side does not have is left out of that booster.
+
 ## Rebuilding the files
 
 `tools/` holds the scripts that made them (Node.js 18 or newer):
@@ -67,4 +70,19 @@ node tools/build-suite.js --write EPLVariableBoosterSize_MyCurioSuite
 
 The first downloads the pull rates into `pullrates.json`, the second prints each booster (size, rarities kept or left
 out, coverage check), the third writes the pack files. The MyCurio set files are read from
-`D:\Games\TCG Card Shop Simulator\BepInEx\plugins\MyCurioCardSets_prefabLoader` (change `SETS` in `build-suite.js`).
+`D:\Games\TCG Card Shop Simulator\BepInEx\plugins\MyCurioCardSets_prefabLoader`, or from the folder in the
+`MYCURIO_SETS` environment variable.
+
+After a MyCurio update, `node tools/check-mycurio.js` lists the boosters and rarities of the suite that the installed
+sets no longer have, and what changed since `tools/mycurio-snapshot.json`, the sets the suite was last built from.
+`--snapshot` records the installed sets as the new reference.
+
+## Changelog
+
+**1.0.1**
+- Gem Pack Vol. 7 updated for MyCurio's Chinese Gem Packs All-in-One HD 1.2.1: the new ★ Triple Rare tier is pulled
+  at MyCurio's own rate. Needs that version of Gem Pack Vol. 7.
+- Checked against Sun and Moon Era All-in-One HD 1.1.1 and XY Era All-in-One HD 1.1.1: no change needed.
+
+**1.0.0**
+- First release: 137 boosters with their real size and pull rates.

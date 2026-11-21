@@ -10,7 +10,7 @@
 // Usage: node build-suite.js [--write <outDir>]
 const fs = require('fs');
 const path = require('path');
-const SETS = 'D:/Games/TCG Card Shop Simulator/BepInEx/plugins/MyCurioCardSets_prefabLoader/';
+const SETS = process.env.MYCURIO_SETS || 'D:/Games/TCG Card Shop Simulator/BepInEx/plugins/MyCurioCardSets_prefabLoader/';
 const rates = require('./pullrates.json');
 // Legendary Collection (no pull rate data): 11 cards, 6 commons, 3 uncommons, 1 reverse holo, 1 rare (PSA); the rare
 // slot's holo share as in the Wizards sets (1 in 3); the reverse slot keeps MyCurio's chances.
